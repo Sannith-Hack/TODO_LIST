@@ -27,9 +27,10 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
     setIsEditing(false);
   };
 
-  const handleIncrement = () => {
+  const handleIncrement = (amount: number = 1) => {
     if (onUpdateCount && item.currentCount !== undefined) {
-      onUpdateCount(item.id, item.currentCount + 1);
+      const newCount = item.currentCount + amount;
+      onUpdateCount(item.id, newCount);
     }
   };
 
@@ -39,13 +40,15 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
     }
   };
 
-  const isWorkout = item.skillType === 'Workout' && item.currentCount !== undefined;
+  const isWorkout = (item.skillType === 'Workout' || item.isPenalty) && item.currentCount !== undefined;
+  const itemColor = item.isPenalty ? COLORS.danger : SKILL_COLORS[item.skillType];
 
   return (
     <View style={[
       styles.taskItem, 
       item.completed && styles.taskItemCompleted,
-      { borderLeftColor: SKILL_COLORS[item.skillType] }
+      { borderLeftColor: itemColor },
+      item.isPenalty && { borderColor: COLORS.danger, borderWidth: 1 }
     ]}>
       {!isEditing && (
         <TouchableOpacity 
@@ -54,18 +57,26 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
         >
           <View style={[
             styles.checkbox, 
-            { borderColor: SKILL_COLORS[item.skillType] },
-            item.completed && { backgroundColor: SKILL_COLORS[item.skillType], ...SHADOWS.glowCustom(SKILL_COLORS[item.skillType]) }
+            { borderColor: itemColor },
+            item.completed && { backgroundColor: itemColor, ...SHADOWS.glowCustom(itemColor) }
           ]} />
         </TouchableOpacity>
       )}
       
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
-          <View style={[styles.badge, { backgroundColor: CATEGORY_COLORS[item.category] + '33', borderColor: CATEGORY_COLORS[item.category] }]}>
-            <Text style={[styles.badgeText, { color: CATEGORY_COLORS[item.category] }]}>{item.category.toUpperCase()}</Text>
+          <View style={[
+            styles.badge, 
+            { backgroundColor: item.isPenalty ? COLORS.danger + '33' : CATEGORY_COLORS[item.category] + '33', 
+              borderColor: item.isPenalty ? COLORS.danger : CATEGORY_COLORS[item.category] }
+          ]}>
+            <Text style={[styles.badgeText, { color: item.isPenalty ? COLORS.danger : CATEGORY_COLORS[item.category] }]}>
+              {item.isPenalty ? 'PENALTY' : item.category.toUpperCase()}
+            </Text>
           </View>
-          <Text style={[styles.skillLabel, { color: SKILL_COLORS[item.skillType] }]}>{item.skillType}</Text>
+          <Text style={[styles.skillLabel, { color: itemColor }]}>
+            {item.isPenalty ? 'SYSTEM' : item.skillType}
+          </Text>
         </View>
 
         {isEditing ? (
@@ -79,7 +90,11 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
           />
         ) : (
           <Text 
-            style={[styles.taskText, item.completed && styles.taskTextCompleted]}
+            style={[
+              styles.taskText, 
+              item.completed && styles.taskTextCompleted,
+              item.isPenalty && { color: COLORS.danger, fontWeight: 'bold' }
+            ]}
             onPress={() => onToggle(item.id)}
           >
             {item.text}
@@ -87,16 +102,33 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
         )}
 
         {isWorkout && !isEditing && (
-          <View style={styles.counterContainer}>
-            <TouchableOpacity onPress={handleDecrement} style={styles.counterBtn}>
-              <Text style={styles.counterBtnText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.counterText}>
-              {item.currentCount} / {item.targetCount} REPS
-            </Text>
-            <TouchableOpacity onPress={handleIncrement} style={styles.counterBtn}>
-              <Text style={styles.counterBtnText}>+</Text>
-            </TouchableOpacity>
+          <View style={styles.workoutControls}>
+            <View style={[styles.counterContainer, item.isPenalty && { borderColor: COLORS.danger }]}>
+              <TouchableOpacity onPress={handleDecrement} style={[styles.counterBtn, item.isPenalty && { backgroundColor: COLORS.danger }]}>
+                <Text style={[styles.counterBtnText, item.isPenalty && { color: COLORS.white }]}>-</Text>
+              </TouchableOpacity>
+              <Text style={[styles.counterText, item.isPenalty && { color: COLORS.danger }]}>
+                {item.currentCount} / {item.targetCount} REPS
+              </Text>
+              <TouchableOpacity onPress={() => handleIncrement(1)} style={[styles.counterBtn, item.isPenalty && { backgroundColor: COLORS.danger }]}>
+                <Text style={[styles.counterBtnText, item.isPenalty && { color: COLORS.white }]}>+</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.quickAddRow}>
+              <TouchableOpacity 
+                onPress={() => handleIncrement(10)} 
+                style={[styles.quickAddBtn, { borderColor: itemColor }]}
+              >
+                <Text style={[styles.quickAddText, { color: itemColor }]}>+10</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => handleIncrement(25)} 
+                style={[styles.quickAddBtn, { borderColor: itemColor }]}
+              >
+                <Text style={[styles.quickAddText, { color: itemColor }]}>+25</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
@@ -108,12 +140,14 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
           </TouchableOpacity>
         ) : (
           <>
-            <TouchableOpacity 
-              onPress={() => setIsEditing(true)} 
-              style={styles.actionButton}
-            >
-              <Text style={styles.editButtonText}>MOD</Text>
-            </TouchableOpacity>
+            {!item.isPenalty && (
+              <TouchableOpacity 
+                onPress={() => setIsEditing(true)} 
+                style={styles.actionButton}
+              >
+                <Text style={styles.editButtonText}>MOD</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity 
               style={styles.actionButton} 
               onPress={() => onDelete(item.id)}
@@ -189,12 +223,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     padding: 0,
   },
+  workoutControls: {
+    marginTop: 8,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
   counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
     backgroundColor: COLORS.background,
-    alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
@@ -217,6 +254,21 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  quickAddRow: {
+    flexDirection: 'row',
+    marginTop: 6,
+  },
+  quickAddBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    marginRight: 8,
+    backgroundColor: COLORS.surface,
+  },
+  quickAddText: {
+    fontSize: 9,
+    fontWeight: '900',
   },
   actionButtons: {
     flexDirection: 'column',

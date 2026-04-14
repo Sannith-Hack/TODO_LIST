@@ -9,6 +9,7 @@ export const COLORS = {
   success: '#00FF94',
   danger: '#FF2E2E',
   border: '#1E1E1E',
+  white: '#FFFFFF',
 };
 
 export const SKILL_COLORS = {

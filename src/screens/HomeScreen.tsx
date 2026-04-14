@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats } from '../utils/types';
-import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp } from '../storage/taskStorage';
+import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings } from '../storage/taskStorage';
+import { QUEST_TEMPLATES, QuestTemplate } from '../utils/templates';
 import TaskItem from '../components/TaskItem';
+import LevelUpModal from '../components/LevelUpModal';
 
 interface HomeScreenProps {
-  onOpenStats: () => void;
+  onOpenMenu: () => void;
 }
 
-const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
+const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [taskInput, setTaskInput] = useState('');
@@ -17,21 +19,78 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
   const [selectedSkill, setSelectedSkill] = useState<SkillType>('Coding');
   const [targetCount, setTargetCount] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [pendingLevel, setPendingLevel] = useState(1);
+  const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
 
   useEffect(() => {
     const initData = async () => {
-      const [storedTasks, storedStats] = await Promise.all([loadTasks(), loadStats()]);
+      const [storedTasks, storedStats, lastUsed] = await Promise.all([
+        loadTasks(), 
+        loadStats(),
+        loadLastUsedSettings()
+      ]);
       
-      // Migrate old tasks that might be missing new properties
-      const migratedTasks = storedTasks.map(task => ({
+      if (lastUsed) {
+        setSelectedCategory(lastUsed.category as TaskCategory);
+        setSelectedSkill(lastUsed.skill as SkillType);
+      }
+
+      const now = Date.now();
+      const lastReset = storedStats.lastResetDate || now;
+      const isNewDay = new Date(now).toDateString() !== new Date(lastReset).toDateString();
+
+      let migratedTasks = storedTasks.map(task => ({
         ...task,
         category: task.category || 'Regular',
         skillType: task.skillType || 'Mental',
         xpValue: task.xpValue || 10,
       }));
 
+      let updatedStats = {
+        ...storedStats,
+        statPoints: (storedStats as any).statPoints || 0,
+        reputationTitle: (storedStats as any).reputationTitle || getTitleByLevel(storedStats.totalLevel),
+        lastResetDate: storedStats.lastResetDate || now,
+      };
+
+      if (isNewDay) {
+        const missedQuests = migratedTasks.filter(t => t.category === 'Regular' && !t.completed && !t.isPenalty);
+        
+        if (missedQuests.length > 0) {
+          Alert.alert(
+            'SYSTEM WARNING',
+            'You failed to complete your daily quests. A Penalty Quest has been issued.',
+            [{ text: 'ACCEPT' }]
+          );
+
+          const penaltyTask: Task = {
+            id: 'penalty-' + now,
+            text: 'PENALTY: Physical Conditioning (100 Reps)',
+            completed: false,
+            createdAt: now,
+            category: 'Regular',
+            skillType: 'Workout',
+            currentCount: 0,
+            targetCount: 100,
+            xpValue: 0,
+            isPenalty: true,
+          };
+          migratedTasks = [penaltyTask, ...migratedTasks];
+        }
+
+        migratedTasks = migratedTasks.map(t => {
+          if (t.category === 'Regular' && !t.isPenalty) {
+            return { ...t, completed: false, currentCount: t.targetCount ? 0 : undefined };
+          }
+          return t;
+        });
+
+        updatedStats.lastResetDate = now;
+      }
+
       setTasks(migratedTasks);
-      setStats(storedStats);
+      setStats(updatedStats);
       setIsInitialized(true);
     };
     initData();
@@ -48,6 +107,12 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
       saveStats(stats);
     }
   }, [stats, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      saveLastUsedSettings(selectedCategory, selectedSkill);
+    }
+  }, [selectedCategory, selectedSkill, isInitialized]);
 
   const addTask = () => {
     if (taskInput.trim().length === 0) return;
@@ -77,12 +142,19 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
     setTargetCount('');
   };
 
+  const handleApplyTemplate = (template: QuestTemplate) => {
+    setTaskInput(template.name);
+    setSelectedCategory(template.category);
+    setSelectedSkill(template.skillType);
+    setTargetCount(template.targetCount?.toString() || '');
+    setIsTemplatePickerVisible(false);
+  };
+
   const handleToggle = (id: string) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
-    // If it's a workout, ensure reps are done before completing
-    if (task.skillType === 'Workout' && !task.completed) {
+    if ((task.skillType === 'Workout' || task.isPenalty) && !task.completed) {
       if ((task.currentCount || 0) < (task.targetCount || 0)) {
         Alert.alert('Quest Requirement', 'You must complete the target reps before finishing this quest.');
         return;
@@ -97,14 +169,23 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
       )
     );
 
-    // Handle XP Gain
     if (newCompletedState && stats) {
       const skillProgress = stats.skills[task.skillType];
-      const updatedSkill = calculateLevelUp(skillProgress, task.xpValue);
+      const { updatedSkill, levelUpCount } = calculateLevelUp(skillProgress, task.xpValue);
+      
+      const newTotalLevel = stats.totalLevel + levelUpCount;
+      
+      if (levelUpCount > 0) {
+        setPendingLevel(newTotalLevel);
+        setShowLevelUp(true);
+      }
       
       setStats({
         ...stats,
+        totalLevel: newTotalLevel,
         totalXp: stats.totalXp + task.xpValue,
+        statPoints: stats.statPoints + (levelUpCount * 5),
+        reputationTitle: getTitleByLevel(newTotalLevel),
         skills: {
           ...stats.skills,
           [task.skillType]: updatedSkill,
@@ -136,19 +217,101 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
   const categories: TaskCategory[] = ['Regular', 'Challenge', 'LongTerm'];
   const skills: SkillType[] = ['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'];
 
+  const getSections = () => {
+    const regular = tasks.filter(t => t.category === 'Regular');
+    const challenge = tasks.filter(t => t.category === 'Challenge');
+    const longTerm = tasks.filter(t => t.category === 'LongTerm');
+
+    const sections = [];
+    if (regular.length > 0) sections.push({ title: 'DAILY QUESTS', data: regular, color: CATEGORY_COLORS.Regular });
+    if (challenge.length > 0) sections.push({ title: 'CHALLENGE QUESTS', data: challenge, color: CATEGORY_COLORS.Challenge });
+    if (longTerm.length > 0) sections.push({ title: 'JOB CHANGE QUESTS', data: longTerm, color: CATEGORY_COLORS.LongTerm });
+
+    return sections;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      {showLevelUp && (
+        <LevelUpModal 
+          level={pendingLevel} 
+          onClose={() => setShowLevelUp(false)} 
+        />
+      )}
+
+      <Modal
+        visible={isTemplatePickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsTemplatePickerVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setIsTemplatePickerVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>SYSTEM PRESETS: {selectedSkill.toUpperCase()}</Text>
+            <View style={styles.modalDivider} />
+            <ScrollView>
+              {QUEST_TEMPLATES[selectedSkill].map((template) => (
+                <TouchableOpacity 
+                  key={template.id} 
+                  style={styles.templateItem}
+                  onPress={() => handleApplyTemplate(template)}
+                >
+                  <View>
+                    <Text style={styles.templateName}>{template.name}</Text>
+                    <Text style={styles.templateMeta}>
+                      {template.category} • {template.xpValue} XP 
+                      {template.targetCount ? ` • ${template.targetCount} Reps` : ''}
+                    </Text>
+                  </View>
+                  <Text style={styles.selectText}>SELECT</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity style={styles.menuBtn} onPress={onOpenMenu}>
+          <View style={styles.menuLine} />
+          <View style={[styles.menuLine, { width: 15 }]} />
+          <View style={styles.menuLine} />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
           <Text style={styles.headerSubtitle}>SYSTEM LOG</Text>
           <Text style={styles.headerTitle}>QUESTS</Text>
         </View>
-        <TouchableOpacity style={styles.statusBtn} onPress={onOpenStats}>
-          <Text style={styles.statusBtnText}>STATUS</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <View style={styles.creationPanel}>
+        <View style={styles.creationHeader}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectorScroll}>
+            {skills.map(skill => (
+              <TouchableOpacity 
+                key={skill} 
+                onPress={() => setSelectedSkill(skill)}
+                style={[
+                  styles.selectorItem, 
+                  selectedSkill === skill && { borderColor: SKILL_COLORS[skill], backgroundColor: SKILL_COLORS[skill] + '22' }
+                ]}
+              >
+                <Text style={[styles.selectorText, selectedSkill === skill && { color: SKILL_COLORS[skill] }]}>{skill}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <TouchableOpacity 
+            style={styles.templateToggle} 
+            onPress={() => setIsTemplatePickerVisible(true)}
+          >
+            <Text style={styles.templateToggleText}>PRESETS</Text>
+          </TouchableOpacity>
+        </View>
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectorScroll}>
           {categories.map(cat => (
             <TouchableOpacity 
@@ -164,21 +327,6 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
           ))}
         </ScrollView>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectorScroll}>
-          {skills.map(skill => (
-            <TouchableOpacity 
-              key={skill} 
-              onPress={() => setSelectedSkill(skill)}
-              style={[
-                styles.selectorItem, 
-                selectedSkill === skill && { borderColor: SKILL_COLORS[skill], backgroundColor: SKILL_COLORS[skill] + '22' }
-              ]}
-            >
-              <Text style={[styles.selectorText, selectedSkill === skill && { color: SKILL_COLORS[skill] }]}>{skill}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
@@ -187,7 +335,7 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
             value={taskInput}
             onChangeText={setTaskInput}
           />
-          {selectedSkill === 'Workout' && (
+          {(selectedSkill === 'Workout') && (
             <TextInput
               style={styles.countInput}
               placeholder="REPS"
@@ -203,8 +351,8 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
         </View>
       </View>
 
-      <FlatList
-        data={tasks}
+      <SectionList
+        sections={getSections()}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TaskItem
@@ -215,10 +363,17 @@ const HomeScreen = ({ onOpenStats }: HomeScreenProps) => {
             onUpdateCount={handleUpdateCount}
           />
         )}
+        renderSectionHeader={({ section: { title, color } }) => (
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionHeaderText, { color }]}>{title}</Text>
+            <View style={[styles.sectionHeaderLine, { backgroundColor: color }]} />
+          </View>
+        )}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <Text style={styles.emptyText}>- NO ACTIVE QUESTS -</Text>
         }
+        stickySectionHeadersEnabled={false}
       />
     </SafeAreaView>
   );
@@ -234,6 +389,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  menuBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+  },
+  menuLine: {
+    height: 2,
+    width: 25,
+    backgroundColor: COLORS.primary,
+    marginBottom: 5,
+    ...SHADOWS.glow,
+  },
+  headerTitleContainer: {
+    alignItems: 'center',
   },
   headerSubtitle: {
     color: COLORS.primary,
@@ -243,28 +415,40 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: COLORS.text,
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '900',
   },
-  statusBtn: {
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    ...SHADOWS.glow,
-  },
-  statusBtnText: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+  headerRightPlaceholder: {
+    width: 40,
   },
   creationPanel: {
     paddingHorizontal: 20,
     marginBottom: 20,
+    marginTop: 15,
+  },
+  creationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  templateToggle: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary + '11',
+    marginLeft: 10,
+    ...SHADOWS.glow,
+  },
+  templateToggleText: {
+    color: COLORS.primary,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   selectorScroll: {
-    marginBottom: 10,
+    flex: 1,
   },
   selectorItem: {
     paddingHorizontal: 12,
@@ -324,6 +508,76 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 40,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  sectionHeaderText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 2,
+    marginRight: 10,
+  },
+  sectionHeaderLine: {
+    flex: 1,
+    height: 1,
+    opacity: 0.3,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxHeight: '70%',
+    backgroundColor: COLORS.surface,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    padding: 20,
+    ...SHADOWS.glow,
+  },
+  modalTitle: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 2,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: COLORS.primary,
+    marginBottom: 15,
+    opacity: 0.5,
+  },
+  templateItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  templateName: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  templateMeta: {
+    color: COLORS.textDim,
+    fontSize: 10,
+    marginTop: 2,
+  },
+  selectText: {
+    color: COLORS.primary,
+    fontSize: 10,
+    fontWeight: '900',
   },
 });
 

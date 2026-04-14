@@ -1,49 +1,40 @@
-  1. What I have understood:
-   * Three Task Categories:
-       * Daily Quests (Regular): Standard tasks that reset every 24 hours.
-       * Challenge Quests (11-Day Tasks): Medium-term streaks or specific challenges that require consistency for 11 days.
-       * Job Change/Legacy Quests (Long-term Goals): Massive, permanent goals that define your "character's" path.
-   * The 5 Skill Pillars:
-       1. Coding: Improvement in technical/logic skills.
-       2. Workout: Physical strength (with specific rep counters for pushups/squats).
-       3. Cultural: Intelligence, reading, arts, or language.
-       4. Sports: Agility, coordination, and team-based play.
-       5. (I noticed you mentioned 5 skills but listed 4—I suggest "System Level" or "Mental Clarity" as the 5th to fit the anime
-          theme).
-   * The Skill Tree Page: A dedicated screen to visualize your growth, likely using progress bars or a "Hexagon Stat" map.
-   * Dynamic Inputs: Workout tasks must have a way to adjust counts (e.g., "Do 50 pushups" where you can increment/decrement).
+  1. Navigation: The "System Menu" Sidebar
+  Instead of the Bottom Tab Bar, we should implement a Side Drawer (Sidebar).
+   * Aesthetic: A semi-transparent dark-blue overlay that slides from the left with a "glitch" or "fade-in" animation.
+   * Header in Sidebar: Your Profile Icon, Rank (e.g., "E-Rank"), and Level (e.g., "Lv. 15") displayed at the top so you always
+     see your status while navigating.
+   * Menu Items: Quest Log, Status Window, Skill Trees, and System Console.
+   * Why: This frees up vertical space for your tasks and feels more like an RPG "Main Menu."
+
+  2. Input Efficiency: "Quick Quest" Dropdown Templates
+  To stop you from typing "Pushups" or "LeetCode" every time, we should add a Template Dropdown in the Creation Panel.
+   * How it works: When you select a Skill (e.g., Workout), the "Quest Name" input is replaced/supplemented by a Dropdown.
+   * Preset Examples:
+       * Workout: [100 Pushups], [50 Squats], [10KM Run].
+       * Coding: [1 LeetCode Medium], [Review 1 PR], [Read Tech Article].
+       * Mental: [15min Meditation], [Read 20 Pages].
+   * Auto-Fill: Selecting a template automatically sets the Category (Regular), Skill Type, and Target Reps for you. One click
+     = Full Quest created.
+
+  3. Rapid Rep Tracking: Multi-Increment Buttons
+  Currently, you have to click + many times for 100 pushups.
+   * Recommendation: Add +5, +10, and +25 buttons next to the counter in the task item.
+   * Why: Reducing 100 clicks to 4 clicks significantly lowers user friction.
+
+  4. Smart Defaults & Categorization
+   * Recency Logic: The app should remember the last Skill/Category you used and default to it.
+   * Visual Grouping: The HomeScreen should automatically group tasks by Category (Daily Quests at top, Long-Term at bottom) so
+     you don't have to hunt for what's due today.
 
   ---
 
-  2. My Recommendations to add more:
+  How should we proceed?
+   1. Sidebar Implementation: Should we move the navigation to a custom Side Drawer first?
+   2. Template System: Would you like me to define the list of "Preset Quests" for the dropdown, or do you want to provide your
+      own?
+   3. Counter Upgrade: Should we add the +10/+25 rapid-tracking buttons to the tasks?
 
-  To make this truly feel like the "Solo Leveling" System, I recommend adding these features:
+  Which of these would you like me to implement first?
 
-   * Rank Progression (E-Rank to S-Rank):
-      Each of your 5 skills should start at E-Rank. As you complete tasks in that category, you gain XP. Once you hit a threshold, the
-  skill "evolves" to D, C, B, A, and finally S-Rank.
-   * Attribute Points:
-      When you complete a certain number of tasks, you gain "Stat Points." You can then go to the Skill Tree page and manually choose
-  where to put those points (e.g., putting points into "Coding" increases your rank there).
-   * The "Penalty Quest" Logic:
-      If you fail to complete your Regular Tasks (Daily Quests), the app could show a "Penalty" warning or a red glow effect,
-  motivating you to stay consistent.
-   * Reputation/Level Titles:
-      Based on your total progress across all skills, you earn titles like "Fledgling Coder," "Gym Monarch," or "Shadow Sovereign."
-   * Haptic Feedback & Sound (Optional):
-      A subtle vibration when you increment a pushup count or a "level up" sound effect when completing a skill milestone.
-
-  ---
-
-  3. How we will proceed (Plan):
-
-   1. Phase 1: Database Upgrade: Modify the storage to handle XP, Ranks, and Rep counts for each skill category.
-   2. Phase 2: Task UI Overhaul: Update the HomeScreen to support the three categories and add the increment/decrement buttons for
-      physical tasks.
-   3. Phase 3: The Skill Tree Screen: Create a new page with a high-tech "System" UI showing your current ranks and progress bars.
-   4. Phase 4: Navigation: Add a bottom tab bar to switch between the "Quest Log" (Tasks) and the "Status Window" (Skill Tree).
-
-  Does this alignment look correct to you? Which 5th skill would you like to add, and should we start with the Task UI or the Skill
-  Tree first?
 
   npx react-native run-android --mode=release --no-packager

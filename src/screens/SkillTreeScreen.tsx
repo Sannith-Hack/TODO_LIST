@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS } from '../utils/theme';
 import { UserStats, SkillType } from '../utils/types';
-import { loadStats } from '../storage/taskStorage';
+import { loadStats, saveStats } from '../storage/taskStorage';
 
-const SkillTreeScreen = ({ onBack }: { onBack: () => void }) => {
+interface SkillTreeScreenProps {
+  onOpenMenu: () => void;
+}
+
+const SkillTreeScreen = ({ onOpenMenu }: SkillTreeScreenProps) => {
   const [stats, setStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
@@ -15,25 +19,80 @@ const SkillTreeScreen = ({ onBack }: { onBack: () => void }) => {
     fetchStats();
   }, []);
 
+  const handleSpendPoint = (skillName: SkillType) => {
+    if (!stats || stats.statPoints <= 0) {
+      Alert.alert('Insufficient Points', 'You have no available Stat Points to distribute.');
+      return;
+    }
+
+    const skill = stats.skills[skillName];
+    const xpGain = 50;
+    let newXp = skill.xp + xpGain;
+    let newLevel = skill.level;
+    let newReqXp = skill.requiredXp;
+    let newRank = skill.rank;
+    let totalLevelGain = 0;
+
+    while (newXp >= newReqXp) {
+      newXp -= newReqXp;
+      newLevel++;
+      totalLevelGain++;
+      newReqXp = Math.floor(newReqXp * 1.5);
+      
+      if (newLevel >= 50) newRank = 'S';
+      else if (newLevel >= 40) newRank = 'A';
+      else if (newLevel >= 30) newRank = 'B';
+      else if (newLevel >= 20) newRank = 'C';
+      else if (newLevel >= 10) newRank = 'D';
+    }
+
+    const newStats: UserStats = {
+      ...stats,
+      statPoints: stats.statPoints - 1,
+      totalLevel: stats.totalLevel + totalLevelGain,
+      skills: {
+        ...stats.skills,
+        [skillName]: {
+          ...skill,
+          level: newLevel,
+          xp: newXp,
+          requiredXp: newReqXp,
+          rank: newRank,
+        }
+      }
+    };
+
+    setStats(newStats);
+    saveStats(newStats);
+  };
+
   if (!stats) return null;
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>{'< QUEST LOG'}</Text>
+        <TouchableOpacity style={styles.menuBtn} onPress={onOpenMenu}>
+          <View style={styles.menuLine} />
+          <View style={[styles.menuLine, { width: 15 }]} />
+          <View style={styles.menuLine} />
         </TouchableOpacity>
         <Text style={styles.title}>STATUS WINDOW</Text>
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.reputationHeader}>
+          <Text style={styles.reputationTitle}>{stats.reputationTitle}</Text>
+          <View style={styles.divider} />
+        </View>
+
         <View style={styles.overallStats}>
           <View style={styles.statCircle}>
             <Text style={styles.levelLabel}>LEVEL</Text>
             <Text style={styles.levelValue}>{stats.totalLevel}</Text>
           </View>
-          <View style={styles.totalXpBar}>
-            <Text style={styles.xpText}>TOTAL XP: {stats.totalXp}</Text>
+          <View style={styles.statPointsBadge}>
+            <Text style={styles.statPointsText}>AVAILABLE POINTS: {stats.statPoints}</Text>
           </View>
         </View>
 
@@ -48,8 +107,18 @@ const SkillTreeScreen = ({ onBack }: { onBack: () => void }) => {
             <View key={skillName} style={styles.skillCard}>
               <View style={styles.skillHeader}>
                 <Text style={[styles.skillName, { color }]}>{skillName.toUpperCase()}</Text>
-                <View style={[styles.rankBadge, { borderColor: color }]}>
-                  <Text style={[styles.rankText, { color }]}>{skill.rank}-RANK</Text>
+                <View style={styles.rankRow}>
+                  <View style={[styles.rankBadge, { borderColor: color }]}>
+                    <Text style={[styles.rankText, { color }]}>{skill.rank}-RANK</Text>
+                  </View>
+                  {stats.statPoints > 0 && (
+                    <TouchableOpacity 
+                      onPress={() => handleSpendPoint(skillName)}
+                      style={[styles.plusBtn, { backgroundColor: color }]}
+                    >
+                      <Text style={styles.plusBtnText}>+</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
 
@@ -84,18 +153,24 @@ const styles = StyleSheet.create({
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backBtn: {
-    position: 'absolute',
-    left: 20,
+  menuBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
   },
-  backBtnText: {
-    color: COLORS.primary,
-    fontSize: 10,
-    fontWeight: 'bold',
+  menuLine: {
+    height: 2,
+    width: 25,
+    backgroundColor: COLORS.primary,
+    marginBottom: 5,
+    ...SHADOWS.glow,
+  },
+  headerRightPlaceholder: {
+    width: 40,
   },
   title: {
     color: COLORS.primary,
@@ -107,6 +182,25 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+  },
+  reputationHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  reputationTitle: {
+    color: COLORS.primary,
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: 4,
+    textShadowColor: COLORS.primary,
+    textShadowRadius: 15,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.primary,
+    width: '60%',
+    marginTop: 8,
+    opacity: 0.5,
   },
   overallStats: {
     alignItems: 'center',
@@ -134,17 +228,17 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: 'bold',
   },
-  totalXpBar: {
-    backgroundColor: COLORS.surface,
+  statPointsBadge: {
+    backgroundColor: COLORS.primary + '22',
     paddingHorizontal: 20,
     paddingVertical: 8,
-    borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.primary,
+    ...SHADOWS.glow,
   },
-  xpText: {
+  statPointsText: {
     color: COLORS.primary,
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
     letterSpacing: 1,
   },
@@ -169,6 +263,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  rankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   skillName: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -178,10 +276,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 2,
+    marginRight: 8,
   },
   rankText: {
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  plusBtn: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.glow,
+  },
+  plusBtnText: {
+    color: COLORS.background,
+    fontSize: 18,
+    fontWeight: '900',
+    marginTop: -2,
   },
   skillInfo: {
     flexDirection: 'row',

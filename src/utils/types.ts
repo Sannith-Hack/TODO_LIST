@@ -9,9 +9,10 @@ export interface Task {
   createdAt: number;
   category: TaskCategory;
   skillType: SkillType;
-  currentCount?: number; // For pushups/squats
-  targetCount?: number;  // For pushups/squats
+  currentCount?: number;
+  targetCount?: number;
   xpValue: number;
+  isPenalty?: boolean; // New property
 }
 
 export interface SkillProgress {
@@ -24,5 +25,8 @@ export interface SkillProgress {
 export interface UserStats {
   totalLevel: number;
   totalXp: number;
+  statPoints: number;
+  reputationTitle: string;
   skills: Record<SkillType, SkillProgress>;
+  lastResetDate: number; // Timestamp of last daily reset check
 }
