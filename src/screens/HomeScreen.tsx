@@ -42,7 +42,7 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
 
       let migratedTasks = storedTasks.map(task => ({
         ...task,
-        category: task.category || 'Regular',
+        category: (task.category === 'Challenge' ? 'OneTime' : task.category) || 'Regular',
         skillType: task.skillType || 'Mental',
         xpValue: task.xpValue || 10,
       }));
@@ -134,7 +134,7 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
       skillType: selectedSkill,
       currentCount: isWorkout ? 0 : undefined,
       targetCount: isWorkout ? reps : undefined,
-      xpValue: selectedCategory === 'Regular' ? 10 : selectedCategory === 'Challenge' ? 50 : 200,
+      xpValue: selectedCategory === 'Regular' ? 10 : selectedCategory === 'OneTime' ? 50 : 200,
     };
 
     setTasks((prevTasks) => [newTask, ...prevTasks]);
@@ -214,17 +214,22 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
     );
   };
 
-  const categories: TaskCategory[] = ['Regular', 'Challenge', 'LongTerm'];
+  const categories: TaskCategory[] = ['Regular', 'OneTime', 'LongTerm'];
+  const categoryLabels: Record<TaskCategory, string> = {
+    Regular: 'DAILY',
+    OneTime: 'ONE-TIME',
+    LongTerm: 'LONG-TERM'
+  };
   const skills: SkillType[] = ['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'];
 
   const getSections = () => {
     const regular = tasks.filter(t => t.category === 'Regular');
-    const challenge = tasks.filter(t => t.category === 'Challenge');
+    const oneTime = tasks.filter(t => t.category === 'OneTime');
     const longTerm = tasks.filter(t => t.category === 'LongTerm');
 
     const sections = [];
     if (regular.length > 0) sections.push({ title: 'DAILY QUESTS', data: regular, color: CATEGORY_COLORS.Regular });
-    if (challenge.length > 0) sections.push({ title: 'CHALLENGE QUESTS', data: challenge, color: CATEGORY_COLORS.Challenge });
+    if (oneTime.length > 0) sections.push({ title: 'ONE-TIME QUESTS', data: oneTime, color: CATEGORY_COLORS.OneTime });
     if (longTerm.length > 0) sections.push({ title: 'JOB CHANGE QUESTS', data: longTerm, color: CATEGORY_COLORS.LongTerm });
 
     return sections;
@@ -289,7 +294,7 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
       </View>
 
       <View style={styles.creationPanel}>
-        <View style={styles.creationHeader}>
+        <View style={styles.skillSelectorContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectorScroll}>
             {skills.map(skill => (
               <TouchableOpacity 
@@ -304,37 +309,42 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <TouchableOpacity 
-            style={styles.templateToggle} 
-            onPress={() => setIsTemplatePickerVisible(true)}
-          >
-            <Text style={styles.templateToggleText}>PRESETS</Text>
-          </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectorScroll}>
+        <View style={styles.categorySelectorContainer}>
           {categories.map(cat => (
             <TouchableOpacity 
               key={cat} 
               onPress={() => setSelectedCategory(cat)}
               style={[
-                styles.selectorItem, 
+                styles.categoryItem, 
                 selectedCategory === cat && { borderColor: CATEGORY_COLORS[cat], backgroundColor: CATEGORY_COLORS[cat] + '22' }
               ]}
             >
-              <Text style={[styles.selectorText, selectedCategory === cat && { color: CATEGORY_COLORS[cat] }]}>{cat}</Text>
+              <Text style={[styles.categoryText, selectedCategory === cat && { color: CATEGORY_COLORS[cat] }]}>
+                {categoryLabels[cat]}
+              </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
         <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="[+] NEW QUEST NAME"
-            placeholderTextColor={COLORS.textDim}
-            value={taskInput}
-            onChangeText={setTaskInput}
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="[+] ENTER QUEST NAME"
+              placeholderTextColor={COLORS.textDim}
+              value={taskInput}
+              onChangeText={setTaskInput}
+            />
+            <TouchableOpacity 
+              style={styles.dropdownTrigger} 
+              onPress={() => setIsTemplatePickerVisible(true)}
+            >
+              <Text style={styles.dropdownIcon}>▼</Text>
+            </TouchableOpacity>
+          </View>
+          
           {(selectedSkill === 'Workout') && (
             <TextInput
               style={styles.countInput}
@@ -426,36 +436,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 15,
   },
-  creationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  skillSelectorContainer: {
     marginBottom: 10,
-  },
-  templateToggle: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primary + '11',
-    marginLeft: 10,
-    ...SHADOWS.glow,
-  },
-  templateToggleText: {
-    color: COLORS.primary,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1,
+    height: 35,
   },
   selectorScroll: {
     flex: 1,
   },
   selectorItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 15,
+    height: 30,
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginRight: 8,
+    marginRight: 10,
     backgroundColor: COLORS.surface,
   },
   selectorText: {
@@ -463,7 +457,32 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
   },
+  categorySelectorContainer: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  categoryItem: {
+    flex: 1,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginRight: 5,
+    backgroundColor: COLORS.surface,
+  },
+  categoryText: {
+    color: COLORS.textDim,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
   inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputWrapper: {
+    flex: 1,
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
     borderWidth: 1,
@@ -472,30 +491,44 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    height: 50,
+    height: 45,
     paddingHorizontal: 15,
     color: COLORS.text,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
+  },
+  dropdownTrigger: {
+    paddingHorizontal: 12,
+    height: '100%',
+    justifyContent: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.border,
+  },
+  dropdownIcon: {
+    color: COLORS.primary,
+    fontSize: 10,
   },
   countInput: {
     width: 60,
-    height: 50,
-    borderLeftWidth: 1,
-    borderLeftColor: COLORS.border,
+    height: 45,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.border,
     textAlign: 'center',
     color: COLORS.primary,
     fontWeight: 'bold',
+    backgroundColor: COLORS.surface,
   },
   addButton: {
-    paddingHorizontal: 20,
-    height: 50,
+    paddingHorizontal: 15,
+    height: 45,
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
+    ...SHADOWS.glow,
   },
   addButtonText: {
     color: COLORS.background,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
   },
   emptyText: {
@@ -512,8 +545,8 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 25,
+    marginBottom: 12,
   },
   sectionHeaderText: {
     fontSize: 10,
@@ -528,7 +561,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -560,7 +593,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
@@ -572,7 +605,7 @@ const styles = StyleSheet.create({
   templateMeta: {
     color: COLORS.textDim,
     fontSize: 10,
-    marginTop: 2,
+    marginTop: 4,
   },
   selectText: {
     color: COLORS.primary,

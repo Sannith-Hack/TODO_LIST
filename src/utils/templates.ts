@@ -12,7 +12,7 @@ export interface QuestTemplate {
 export const QUEST_TEMPLATES: Record<SkillType, QuestTemplate[]> = {
   Coding: [
     { id: 'c1', name: 'LeetCode Easy', category: 'Regular', skillType: 'Coding', xpValue: 10 },
-    { id: 'c2', name: 'LeetCode Medium', category: 'Challenge', skillType: 'Coding', xpValue: 50 },
+    { id: 'c2', name: 'LeetCode Medium', category: 'OneTime', skillType: 'Coding', xpValue: 50 },
     { id: 'c3', name: 'Project Commit', category: 'Regular', skillType: 'Coding', xpValue: 20 },
     { id: 'c4', name: 'Read Tech Documentation', category: 'Regular', skillType: 'Coding', xpValue: 15 },
     { id: 'c5', name: 'Code Review', category: 'Regular', skillType: 'Coding', xpValue: 15 },
@@ -21,7 +21,7 @@ export const QUEST_TEMPLATES: Record<SkillType, QuestTemplate[]> = {
     { id: 'w1', name: 'Pushups Training', category: 'Regular', skillType: 'Workout', targetCount: 100, xpValue: 20 },
     { id: 'w2', name: 'Squats Session', category: 'Regular', skillType: 'Workout', targetCount: 50, xpValue: 15 },
     { id: 'w3', name: 'Daily Pullups', category: 'Regular', skillType: 'Workout', targetCount: 20, xpValue: 25 },
-    { id: 'w4', name: 'Morning Run (5KM)', category: 'Challenge', skillType: 'Workout', targetCount: 1, xpValue: 50 },
+    { id: 'w4', name: 'Morning Run (5KM)', category: 'OneTime', skillType: 'Workout', targetCount: 1, xpValue: 50 },
     { id: 'w5', name: 'Plank Endurance', category: 'Regular', skillType: 'Workout', targetCount: 3, xpValue: 20 },
   ],
   Cultural: [
@@ -32,7 +32,7 @@ export const QUEST_TEMPLATES: Record<SkillType, QuestTemplate[]> = {
   ],
   Sports: [
     { id: 's1', name: 'Basketball Practice', category: 'Regular', skillType: 'Sports', xpValue: 30 },
-    { id: 's2', name: 'Football Match', category: 'Challenge', skillType: 'Sports', xpValue: 60 },
+    { id: 's2', name: 'Football Match', category: 'OneTime', skillType: 'Sports', xpValue: 60 },
     { id: 's3', name: 'Swimming (10 Laps)', category: 'Regular', skillType: 'Sports', xpValue: 40 },
     { id: 's4', name: 'Tennis Session', category: 'Regular', skillType: 'Sports', xpValue: 30 },
   ],

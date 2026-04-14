@@ -1,6 +1,6 @@
 export type SkillType = 'Coding' | 'Workout' | 'Cultural' | 'Sports' | 'Mental';
 
-export type TaskCategory = 'Regular' | 'Challenge' | 'LongTerm';
+export type TaskCategory = 'Regular' | 'OneTime' | 'LongTerm';
 
 export interface Task {
   id: string;

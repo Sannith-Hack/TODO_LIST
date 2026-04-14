@@ -22,7 +22,7 @@ export const SKILL_COLORS = {
 
 export const CATEGORY_COLORS = {
   Regular: '#00D1FF',
-  Challenge: '#7000FF',
+  OneTime: '#7000FF',
   LongTerm: '#FFD700',
 };
 
