@@ -45,3 +45,5 @@
 
   Does this alignment look correct to you? Which 5th skill would you like to add, and should we start with the Task UI or the Skill
   Tree first?
+
+  npx react-native run-android --mode=release --no-packager

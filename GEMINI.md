@@ -4,11 +4,11 @@ A production-quality To-Do List mobile application built with **React Native CLI
 
 ## 🚀 Project Overview
 - **Framework:** React Native 0.76.1
-- **Engine:** JSCore (Stable, no New Architecture)
+- **Engine:** Hermes
 - **Architecture:** **Stable Bridge Mode**. All "New Architecture" (Fabric) code has been removed for maximum stability on Android 14/15.
 - **Styling:** Vanilla StyleSheet with a dark mode "System" aesthetic (Neon Blue/Glows).
 - **Persistence:** Local data storage via `@react-native-async-storage/async-storage`.
-- **JS Executor:** JSCore (via jsc-android) - replaced Hermes due to native library packaging issues with React Native 0.76.1
+- **System Features:** 3 Quest Categories (Regular, Challenge, LongTerm), 5 Skill Trees (Coding, Workout, Cultural, Sports, Mental), Rep counters for physical quests, and an XP/Leveling system tracked via Status Window.
 
 ## 🛠️ Building and Running
 
@@ -29,19 +29,18 @@ A production-quality To-Do List mobile application built with **React Native CLI
 ### MainApplication.kt (Fixed)
 Location: `android/app/src/main/java/com/todoapp/MainApplication.kt`
 
-**Issue:** App was crashing with `UnsatisfiedLinkError: dlopen failed: library "libreact_featureflagsjni.so" not found`
-**Fix:** Removed `reactHost` property override that was calling `getDefaultReactHost()`, which attempted to load New Architecture entry point.
+**Issue:** App was crashing with `UnsatisfiedLinkError: dlopen failed: library "libhermes_executor.so" not found`
+**Fix:** Removed `reactHost` property override that was calling `getDefaultReactHost()`. Additionally, initialized `SoLoader` with `OpenSourceMergedSoMapping` instead of `false`.
 
-**Status:** ✅ Resolved - Removed problematic New Architecture initialization
+**Status:** ✅ Resolved - SoLoader now correctly maps merged native libraries in RN 0.76.1.
 
 ### build.gradle Configuration (Updated)
 Location: `android/app/build.gradle`
 
 **Changes:**
-1. Set `hermesEnabled = false` (was `true`) - Hermes prefab library had packaging issues with RN 0.76.1
-2. Using JSCore engine instead (default when Hermes disabled)
-3. `useLegacyPackaging = true` enabled for native library inclusion
-4. Universal APK generation enabled (all ABIs: arm64-v8a, armeabi-v7a, x86, x86_64)
+1. Set `hermesEnabled = true` to re-enable Hermes.
+2. `useLegacyPackaging = true` enabled for native library inclusion
+3. Universal APK generation enabled (all ABIs: arm64-v8a, armeabi-v7a, x86, x86_64)
 
 ### package.json (Updated)
 Location: `package.json`
@@ -64,34 +63,35 @@ This provides JavaScriptCore native executor library for proper JS execution on 
 5. **Code Stripping:** `MainApplication.kt` stripped of all `DefaultNewArchitectureEntryPoint` calls
 
 ## 📂 Folder Structure
-- **`src/components/`**: `TaskItem.tsx` (Handles its own editing state)
-- **`src/screens/`**: `LoadingScreen.tsx` (Custom Quote) and `HomeScreen.tsx` (Quest Log)
-- **`src/storage/`**: `taskStorage.ts` (AsyncStorage JSON handling)
-- **`src/utils/`**: `theme.ts` (Neon Blue palette) and `types.ts` (Task interface)
+- **`src/components/`**: `TaskItem.tsx` (Handles its own editing state and rep counters)
+- **`src/screens/`**: `LoadingScreen.tsx` (System Notice), `HomeScreen.tsx` (Quest Log), and `SkillTreeScreen.tsx` (Status Window)
+- **`src/storage/`**: `taskStorage.ts` (AsyncStorage JSON handling for tasks and XP stats)
+- **`src/utils/`**: `theme.ts` (Neon Blue/Purple/Gold palettes) and `types.ts` (Task & Skill interfaces)
 
 ## 📏 Development Conventions
 - **Hooks Only:** Use `useState` and `useEffect` for all logic
-- **Stable Engine:** Maintain `isNewArchEnabled: false` and `isHermesEnabled: false` in `MainApplication.kt`
-- **Styling:** Always use `SHADOWS.glow` from the theme for the "System" feel
-- **JS Executor:** JSCore via jsc-android (reliable native library support on Android 14/15)
+- **Stable Engine:** Maintain `isNewArchEnabled: false` and `isHermesEnabled: true` in `MainApplication.kt`
+- **Styling:** Always use `SHADOWS.glow` or `SHADOWS.glowCustom(color)` from the theme for the "System" feel
+- **JS Executor:** Hermes (with `OpenSourceMergedSoMapping` fix applied)
 
 ## ✅ Build Status (April 14, 2026)
 
 ### Issues Found & Fixed
 1. ❌ **New Architecture Entry Point Crash** → ✅ Removed reactHost property override
-2. ❌ **Hermes Library Not Found (libhermes.so)** → ✅ Disabled Hermes, switched to JSCore
-3. ❌ **JSC Executor Not Found (libjscexecutor.so)** → ✅ Added jsc-android dependency
+2. ❌ **Hermes Library Not Found (libhermes_executor.so)** → ✅ Fixed by initializing `SoLoader` with `OpenSourceMergedSoMapping` instead of `false` in `MainApplication.kt`.
+3. ❌ **Release Build Fails on Device** → ✅ Handled via `--mode=release` and ensuring the emulator or device is connected during the final build step.
+4. ❌ **Missing Properties on Old Tasks** → ✅ Added data migration step in `HomeScreen.tsx` to apply default categories and XP to existing quests.
 
 ### Current Build Output
 ```
 BUILD SUCCESSFUL in 30s
-83 actionable tasks: 13 executed, 70 up-to-date
+83 actionable tasks: 18 executed, 65 up-to-date
 ✅ Installed on Samsung device (SM-M315F - 15)
 ✅ App launched successfully
 ```
 
 ### Deployment Status
-- ✅ **APK built successfully** (app-debug.apk)
+- ✅ **APK built successfully** (app-debug.apk and release APK)
 - ✅ **Installed on physical device**
 - ✅ **App running without crashes**
 - ✅ **No native library errors**
@@ -108,6 +108,7 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
@@ -115,22 +116,17 @@ class MainApplication : Application(), ReactApplication {
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
-            PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here
-            }
+            PackageList(this).packages.apply {}
 
         override fun getJSMainModuleName(): String = "index"
-
         override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
-
         override val isNewArchEnabled: Boolean = false
-        override val isHermesEnabled: Boolean = false
+        override val isHermesEnabled: Boolean = true
       }
 
   override fun onCreate() {
     super.onCreate()
-    SoLoader.init(this, false)
-    // No more New Architecture hooks here
+    SoLoader.init(this, OpenSourceMergedSoMapping)
   }
 }
 ```
@@ -155,12 +151,11 @@ class MainActivity : ReactActivity() {
 ### build.gradle (React Configuration)
 ```gradle
 /**
- * Hermes temporarily disabled - library packaging issue
- * Using JSCore (default) engine until Hermes prefab is resolved
+ * Hermes enabled for RN 0.76.1
  */
 react {
     autolinkLibrariesWithApp()
-    hermesEnabled = false
+    hermesEnabled = true
 }
 ```
 
@@ -170,15 +165,15 @@ react {
   "dependencies": {
     "react": "18.3.1",
     "react-native": "0.76.1",
-    "@react-native-async-storage/async-storage": "2.1.0",
-    "jsc-android": "^250231.0.0"
+    "@react-native-async-storage/async-storage": "2.1.0"
   }
 }
 ```
 
 ## 🎯 Next Steps
-1. Test task creation, editing, and deletion on device
-2. Verify theme (neon blue glow) renders correctly
-3. Test AsyncStorage persistence (tasks saved across app restarts)
-4. Optional: Re-enable Hermes after React Native releases a fix for prefab library packaging
+1. Test the XP calculation and rank threshold logic across multiple days
+2. Add a visual pop-up or animation when a skill ranks up
+3. Explore adding daily penalty quests for failing Regular tasks
+4. Test the Release APK installation on a disconnected device
+
 
