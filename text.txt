@@ -1,75 +1,47 @@
-You are a senior React Native developer and mentor. Your task is to guide me in building a production-quality To-Do List mobile application from scratch using React Native.
+  1. What I have understood:
+   * Three Task Categories:
+       * Daily Quests (Regular): Standard tasks that reset every 24 hours.
+       * Challenge Quests (11-Day Tasks): Medium-term streaks or specific challenges that require consistency for 11 days.
+       * Job Change/Legacy Quests (Long-term Goals): Massive, permanent goals that define your "character's" path.
+   * The 5 Skill Pillars:
+       1. Coding: Improvement in technical/logic skills.
+       2. Workout: Physical strength (with specific rep counters for pushups/squats).
+       3. Cultural: Intelligence, reading, arts, or language.
+       4. Sports: Agility, coordination, and team-based play.
+       5. (I noticed you mentioned 5 skills but listed 4—I suggest "System Level" or "Mental Clarity" as the 5th to fit the anime
+          theme).
+   * The Skill Tree Page: A dedicated screen to visualize your growth, likely using progress bars or a "Hexagon Stat" map.
+   * Dynamic Inputs: Workout tasks must have a way to adjust counts (e.g., "Do 50 pushups" where you can increment/decrement).
 
-Follow these strict rules
+  ---
 
- Do NOT skip steps
- Do NOT give everything at once
- Build the app step-by-step like a real project
- Explain briefly, then give code only when necessary
- Keep code clean, modular, and scalable
- Use functional components and React Hooks only
- Follow best practices for folder structure and naming
+  2. My Recommendations to add more:
 
----
+  To make this truly feel like the "Solo Leveling" System, I recommend adding these features:
 
-PROJECT REQUIREMENTS
+   * Rank Progression (E-Rank to S-Rank):
+      Each of your 5 skills should start at E-Rank. As you complete tasks in that category, you gain XP. Once you hit a threshold, the
+  skill "evolves" to D, C, B, A, and finally S-Rank.
+   * Attribute Points:
+      When you complete a certain number of tasks, you gain "Stat Points." You can then go to the Skill Tree page and manually choose
+  where to put those points (e.g., putting points into "Coding" increases your rank there).
+   * The "Penalty Quest" Logic:
+      If you fail to complete your Regular Tasks (Daily Quests), the app could show a "Penalty" warning or a red glow effect,
+  motivating you to stay consistent.
+   * Reputation/Level Titles:
+      Based on your total progress across all skills, you earn titles like "Fledgling Coder," "Gym Monarch," or "Shadow Sovereign."
+   * Haptic Feedback & Sound (Optional):
+      A subtle vibration when you increment a pushup count or a "level up" sound effect when completing a skill milestone.
 
-Build a To-Do List app with the following features
+  ---
 
-Core Features
+  3. How we will proceed (Plan):
 
- Add a new task
- Edit an existing task
- Delete a task
- Mark task as completeduncompleted
- Display list of tasks
- Persist data locally (use AsyncStorage)
+   1. Phase 1: Database Upgrade: Modify the storage to handle XP, Ranks, and Rep counts for each skill category.
+   2. Phase 2: Task UI Overhaul: Update the HomeScreen to support the three categories and add the increment/decrement buttons for
+      physical tasks.
+   3. Phase 3: The Skill Tree Screen: Create a new page with a high-tech "System" UI showing your current ranks and progress bars.
+   4. Phase 4: Navigation: Add a bottom tab bar to switch between the "Quest Log" (Tasks) and the "Status Window" (Skill Tree).
 
-UI Requirements
-
- Solo leveling anime type UI
- And the loading screen should say ("Jack of all trades master of none but oftentimes better than the master of one")
- Input field + Add button
- Task list with checkbox
- Edit & Delete actions per item
- Completed tasks should have different styling
-
-Technical Requirements
-
- React Native CLI (not Expo unless I ask)
- Use AsyncStorage for persistence
- Use FlatList for rendering tasks
- Proper component separation
-
-Folder Structure
-
- components
- screens
- utils
- storage
-
----
-
-DEVELOPMENT PLAN (Follow strictly step-by-step)
-
-Step 1 Project setup and folder structure
-Step 2 Solo leveling anime UI layout (no logic)
-Step 3 State management for tasks
-Step 4 Add task functionality
-Step 5 Delete task functionality
-Step 6 Toggle complete functionality
-Step 7 Edit task functionality
-Step 8 AsyncStorage integration
-Step 9 UI improvements and styling
-Step 10 Code cleanup and optimization
-
----
-
-RULES FOR RESPONSES
- Avoid unnecessary theory
- If I make mistakes, correct me strictly
- Do not assume anything — ask if needed
-
----
-
-Start with Step 1 Project setup and folder structure.
+  Does this alignment look correct to you? Which 5th skill would you like to add, and should we start with the Task UI or the Skill
+  Tree first?
