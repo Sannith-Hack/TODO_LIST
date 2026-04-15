@@ -13,11 +13,16 @@ const INITIAL_SKILL_PROGRESS: SkillProgress = {
 };
 
 const INITIAL_STATS: UserStats = {
+  playerName: '',
   totalLevel: 1,
   totalXp: 0,
   statPoints: 0,
   reputationTitle: 'E-RANK HUNTER',
   lastResetDate: Date.now(),
+  notificationSettings: {
+    enabled: false,
+    interval: 60,
+  },
   skills: {
     Coding: { ...INITIAL_SKILL_PROGRESS },
     Workout: { ...INITIAL_SKILL_PROGRESS },

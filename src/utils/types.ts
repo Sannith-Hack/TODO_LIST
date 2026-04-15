@@ -7,12 +7,14 @@ export interface Task {
   text: string;
   completed: boolean;
   createdAt: number;
+  dueDate?: number; // Timestamp for scheduled date
+  completedAt?: number; // Timestamp when finished
   category: TaskCategory;
   skillType: SkillType;
   currentCount?: number;
   targetCount?: number;
   xpValue: number;
-  isPenalty?: boolean; // New property
+  isPenalty?: boolean;
 }
 
 export interface SkillProgress {
@@ -23,10 +25,15 @@ export interface SkillProgress {
 }
 
 export interface UserStats {
+  playerName: string;
   totalLevel: number;
   totalXp: number;
   statPoints: number;
   reputationTitle: string;
   skills: Record<SkillType, SkillProgress>;
-  lastResetDate: number; // Timestamp of last daily reset check
+  lastResetDate: number;
+  notificationSettings: {
+    enabled: boolean;
+    interval: 15 | 30 | 60 | 120; // Minutes
+  };
 }

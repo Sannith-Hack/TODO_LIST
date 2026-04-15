@@ -34,7 +34,7 @@
       own?
    3. Counter Upgrade: Should we add the +10/+25 rapid-tracking buttons to the tasks?
 
-  Which of these would you like me to implement first?
+Is the above work done  My system set downs unexpectedly  . If yes then recommend me some changes to do in this app to make it 100 percent functional and user friendly  . And there is a problem in quest log page Daily qust job change quest And one time quest  Are not sowing properly there at the bottom of the page an isn't scrollable properly I recommend create a separate page for A to do list Just keep the quest log page as it is .And text failed for entering the quest name is have Too much height just decrease it a little bit just taking so much .
 
 
   npx react-native run-android --mode=release --no-packager

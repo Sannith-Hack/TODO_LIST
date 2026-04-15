@@ -15,8 +15,8 @@ import { UserStats } from '../utils/types';
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  currentScreen: 'Home' | 'SkillTree' | 'Testing';
-  onNavigate: (screen: 'Home' | 'SkillTree' | 'Testing') => void;
+  currentScreen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar';
+  onNavigate: (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar') => void;
   stats: UserStats | null;
 }
 
@@ -66,7 +66,7 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
     }
   }, [isOpen]);
 
-  const handleNavigate = (screen: 'Home' | 'SkillTree' | 'Testing') => {
+  const handleNavigate = (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar') => {
     onNavigate(screen);
     onClose();
   };
@@ -87,9 +87,10 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.profileSection}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>{stats?.reputationTitle?.[0] || 'E'}</Text>
+              <Text style={styles.avatarText}>{stats?.playerName?.[0] || 'P'}</Text>
             </View>
             <View style={styles.profileInfo}>
+              <Text style={styles.playerName}>{stats?.playerName || 'PLAYER'}</Text>
               <Text style={styles.rankText}>{stats?.reputationTitle || 'E-RANK HUNTER'}</Text>
               <Text style={styles.levelText}>LEVEL {stats?.totalLevel || 1}</Text>
             </View>
@@ -106,6 +107,13 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
             </TouchableOpacity>
 
             <TouchableOpacity 
+              style={[styles.menuItem, currentScreen === 'Calendar' && styles.activeMenuItem]}
+              onPress={() => handleNavigate('Calendar')}
+            >
+              <Text style={[styles.menuText, currentScreen === 'Calendar' && styles.activeMenuText]}>CHRONICLES</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
               style={[styles.menuItem, currentScreen === 'SkillTree' && styles.activeMenuItem]}
               onPress={() => handleNavigate('SkillTree')}
             >
@@ -117,6 +125,13 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
               onPress={() => handleNavigate('Testing')}
             >
               <Text style={[styles.menuText, currentScreen === 'Testing' && styles.activeMenuText]}>SYSTEM CONSOLE</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.menuItem, currentScreen === 'Settings' && styles.activeMenuItem]}
+              onPress={() => handleNavigate('Settings')}
+            >
+              <Text style={[styles.menuText, currentScreen === 'Settings' && styles.activeMenuText]}>SYSTEM SETTINGS</Text>
             </TouchableOpacity>
           </View>
 
@@ -182,6 +197,13 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     marginLeft: 15,
+  },
+  playerName: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginBottom: 2,
   },
   rankText: {
     color: COLORS.primary,
