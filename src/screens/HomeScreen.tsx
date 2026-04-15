@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Platform, Keyboard, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats } from '../utils/types';
 import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings } from '../storage/taskStorage';
@@ -18,11 +18,11 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
   const [selectedCategory, setSelectedCategory] = useState<TaskCategory>('Regular');
   const [selectedSkill, setSelectedSkill] = useState<SkillType>('Coding');
   const [targetCount, setTargetCount] = useState('');
-  const [scheduledOffset, setScheduledOffset] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [pendingLevel, setPendingLevel] = useState(1);
   const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
+  const [scheduledDays, setScheduledDays] = useState(0);
 
   useEffect(() => {
     const initData = async () => {
@@ -51,15 +51,22 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
     if (taskInput.trim().length === 0) return;
     const isWorkout = selectedSkill === 'Workout';
     const reps = parseInt(targetCount) || 0;
-    const dueDate = scheduledOffset > 0 ? new Date().setHours(0,0,0,0) + (scheduledOffset * 24 * 60 * 60 * 1000) : undefined;
-    const newTask: Task = { id: Date.now().toString(), text: taskInput.trim(), completed: false, createdAt: Date.now(), dueDate, category: selectedCategory, skillType: selectedSkill, currentCount: isWorkout ? 0 : undefined, targetCount: isWorkout ? reps : undefined, xpValue: selectedCategory === 'Regular' ? 10 : selectedCategory === 'OneTime' ? 50 : 200 };
+    const dueDate = scheduledDays > 0 ? new Date().setHours(0,0,0,0) + (scheduledDays * 24 * 60 * 60 * 1000) : undefined;
+    const newTask: Task = { 
+        id: Date.now().toString(), 
+        text: taskInput.trim(), 
+        completed: false, 
+        createdAt: Date.now(), 
+        dueDate,
+        category: selectedCategory, 
+        skillType: selectedSkill, 
+        currentCount: isWorkout ? 0 : undefined, 
+        targetCount: isWorkout ? reps : undefined, 
+        xpValue: selectedCategory === 'Regular' ? 10 : selectedCategory === 'OneTime' ? 50 : 200 
+    };
     setTasks(prev => [newTask, ...prev]);
-    setTaskInput(''); setTargetCount(''); setScheduledOffset(0);
+    setTaskInput(''); setTargetCount(''); setScheduledDays(0);
     Keyboard.dismiss();
-  };
-
-  const handleToggle = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed, completedAt: !t.completed ? Date.now() : undefined } : t));
   };
 
   const getSections = () => {
@@ -87,22 +94,19 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
         </View>
         <View style={styles.categorySelectorContainer}>
           {(['Regular', 'OneTime', 'LongTerm'] as TaskCategory[]).map(cat => (
-            <TouchableOpacity key={cat} onPress={() => { setSelectedCategory(cat); if (cat === 'Regular') setScheduledOffset(0); }} style={[ styles.categoryItem, selectedCategory === cat && { borderColor: CATEGORY_COLORS[cat], backgroundColor: CATEGORY_COLORS[cat] + '22' } ]}>
+            <TouchableOpacity key={cat} onPress={() => setSelectedCategory(cat)} style={[ styles.categoryItem, selectedCategory === cat && { borderColor: CATEGORY_COLORS[cat], backgroundColor: CATEGORY_COLORS[cat] + '22' } ]}>
               <Text style={[styles.categoryText, selectedCategory === cat && { color: CATEGORY_COLORS[cat] }]}>{cat.toUpperCase()}</Text>
             </TouchableOpacity>
           ))}
         </View>
         {selectedCategory !== 'Regular' && (
-          <View style={styles.scheduleContainer}>
-            <Text style={styles.scheduleLabel}>DATE:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {[0, 1, 2, 3, 4, 5, 6, 7].map(offset => (
-                <TouchableOpacity key={offset} onPress={() => setScheduledOffset(offset)} style={[styles.offsetItem, scheduledOffset === offset && styles.offsetItemActive]}>
-                    <Text style={[styles.offsetText, scheduledOffset === offset && styles.offsetTextActive]}>{offset === 0 ? 'TODAY' : `+${offset}D`}</Text>
-                </TouchableOpacity>
+          <ScrollView horizontal style={styles.scheduleContainer}>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map(d => (
+                  <TouchableOpacity key={d} onPress={() => setScheduledDays(d)} style={[styles.offsetItem, scheduledDays === d && styles.offsetItemActive]}>
+                      <Text style={[styles.offsetText, scheduledDays === d && styles.offsetTextActive]}>{d === 0 ? 'TODAY' : `+${d}D`}</Text>
+                  </TouchableOpacity>
               ))}
-            </ScrollView>
-          </View>
+          </ScrollView>
         )}
         <View style={styles.inputRow}>
             <TextInput style={styles.input} placeholder="[+] QUEST NAME" placeholderTextColor={COLORS.textDim} value={taskInput} onChangeText={setTaskInput} />
@@ -113,40 +117,47 @@ const HomeScreen = ({ onOpenMenu }: HomeScreenProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onOpenMenu}><Text style={styles.menuText}>MENU</Text></TouchableOpacity>
-        <Text style={styles.title}>QUEST LOG</Text>
-        <View style={{width: 40}} />
-      </View>
       <SectionList
         sections={getSections()}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TaskItem item={item} onToggle={handleToggle} onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} onUpdateCount={(id, count) => setTasks(prev => prev.map(t => t.id === id ? {...t, currentCount: count} : t))} />}
+        renderItem={({ item }) => <TaskItem item={item} onToggle={(id) => setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed, completedAt: !t.completed ? Date.now() : undefined } : t))} onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} onUpdateCount={(id, count) => setTasks(prev => prev.map(t => t.id === id ? {...t, currentCount: count} : t))} />}
         renderSectionHeader={({ section: { title, color } }) => <View style={styles.sectionHeader}><Text style={[styles.sectionHeaderText, { color }]}>{title}</Text></View>}
         ListHeaderComponent={<ListHeader />}
         stickySectionHeadersEnabled={false}
       />
+      <Modal visible={isTemplatePickerVisible} transparent animationType="fade" onRequestClose={() => setIsTemplatePickerVisible(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setIsTemplatePickerVisible(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>PRESETS</Text>
+            <ScrollView>
+              {QUEST_TEMPLATES[selectedSkill].map((t) => (
+                <TouchableOpacity key={t.id} style={styles.templateItem} onPress={() => { setTaskInput(t.name); setSelectedCategory(t.category); setIsTemplatePickerVisible(false); }}>
+                  <Text style={styles.templateName}>{t.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  creationPanel: { padding: 20 },
+  header: { padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { color: COLORS.primary, fontSize: 20, fontWeight: '900', letterSpacing: 2 },
   menuText: { color: COLORS.primary, fontWeight: 'bold' },
-  creationPanel: { padding: 20 },
-  skillSelectorContainer: { marginBottom: 10 },
   selectorItem: { paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: COLORS.border, marginRight: 10 },
   selectorText: { fontSize: 10, fontWeight: 'bold', color: COLORS.textDim },
   categorySelectorContainer: { flexDirection: 'row', marginBottom: 10 },
   categoryItem: { flex: 1, padding: 8, borderWidth: 1, borderColor: COLORS.border, marginRight: 5, alignItems: 'center' },
   categoryText: { fontSize: 9, fontWeight: 'bold' },
-  scheduleContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, padding: 5, borderWidth: 1, borderColor: COLORS.border },
-  scheduleLabel: { color: COLORS.primary, fontSize: 8, fontWeight: '900', marginRight: 5 },
-  offsetItem: { paddingHorizontal: 8, paddingVertical: 4 },
+  scheduleContainer: { flexDirection: 'row', marginBottom: 10, borderWidth: 1, borderColor: COLORS.border },
+  offsetItem: { padding: 8 },
   offsetItemActive: { backgroundColor: COLORS.primary + '22' },
-  offsetText: { color: COLORS.textDim, fontSize: 9, fontWeight: 'bold' },
+  offsetText: { color: COLORS.textDim, fontSize: 10 },
   offsetTextActive: { color: COLORS.primary },
   inputRow: { flexDirection: 'row', alignItems: 'center' },
   input: { flex: 1, backgroundColor: COLORS.surface, color: COLORS.text, paddingHorizontal: 15, height: 40 },
@@ -154,6 +165,11 @@ const styles = StyleSheet.create({
   addButtonText: { color: COLORS.background, fontWeight: '900', fontSize: 11 },
   sectionHeader: { paddingHorizontal: 20, marginTop: 15, marginBottom: 5 },
   sectionHeaderText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', maxHeight: '50%', backgroundColor: COLORS.surface, borderWidth: 2, borderColor: COLORS.primary, padding: 20 },
+  modalTitle: { color: COLORS.primary, fontSize: 14, fontWeight: '900', marginBottom: 10 },
+  templateItem: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  templateName: { color: COLORS.text, fontSize: 14 },
   templateToggle: { paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: COLORS.primary },
   templateToggleText: { color: COLORS.primary, fontSize: 9, fontWeight: 'bold' },
   creationHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }
