@@ -8,172 +8,51 @@ A production-quality To-Do List mobile application built with **React Native CLI
 - **Architecture:** **Stable Bridge Mode**. All "New Architecture" (Fabric) code has been removed for maximum stability on Android 14/15.
 - **Styling:** Vanilla StyleSheet with a dark mode "System" aesthetic (Neon Blue/Glows).
 - **Persistence:** Local data storage via `@react-native-async-storage/async-storage`.
-- **System Features:** 3 Quest Categories (Regular, Challenge, LongTerm), 5 Skill Trees (Coding, Workout, Cultural, Sports, Mental), Rep counters for physical quests, and an XP/Leveling system tracked via Status Window.
+- **System Features:** Quest Categories (Regular, One-Time, LongTerm), 5 Skill Trees (Coding, Workout, Cultural, Sports, Mental), Rep counters for physical quests, XP/Leveling system, Attribute Points, Penalty Quests, Player Registration, and Calendar History.
 
 ## 🛠️ Building and Running
 
 ### Prerequisites
 - **Node.js:** >= 18
-- **Java JDK:** **Exactly 17** (Critical: Higher versions like 21/26 cause `IBM_SEMERU` and Kotlin metadata errors).
+- **Java JDK:** **Exactly 17** 
 - **Android SDK:** Platform 35, Build Tools 35.0.0.
-- **Gradle:** 8.10.2 (Wrapper forced to this version for plugin compatibility).
+- **Gradle:** 8.10.2
 
 ### Key Commands
 - **Install Dependencies:** `npm install`
 - **Start Metro Bundler:** `npm start`
-- **Run Android:** `npx react-native run-android`
-- **Nuclear Clean:** `Get-Process | Where-Object { $_.Name -match "java" -or $_.Name -match "gradle" } | Stop-Process -Force; Remove-Item -Recurse -Force android/.gradle, android/app/build`
+- **Run Android:** `npx react-native run-android --mode=release --no-packager`
 
-## 📂 Native Configuration (Fixes Applied - Updated April 14, 2026)
-
-### MainApplication.kt (Fixed)
-Location: `android/app/src/main/java/com/todoapp/MainApplication.kt`
-
-**Issue:** App was crashing with `UnsatisfiedLinkError: dlopen failed: library "libhermes_executor.so" not found`
-**Fix:** Removed `reactHost` property override that was calling `getDefaultReactHost()`. Additionally, initialized `SoLoader` with `OpenSourceMergedSoMapping` instead of `false`.
-
-**Status:** ✅ Resolved - SoLoader now correctly maps merged native libraries in RN 0.76.1.
-
-### build.gradle Configuration (Updated)
-Location: `android/app/build.gradle`
-
-**Changes:**
-1. Set `hermesEnabled = true` to re-enable Hermes.
-2. `useLegacyPackaging = true` enabled for native library inclusion
-3. Universal APK generation enabled (all ABIs: arm64-v8a, armeabi-v7a, x86, x86_64)
-
-### package.json (Updated)
-Location: `package.json`
-
-**Added Dependency:**
-```json
-"jsc-android": "^250231.0.0"
-```
-This provides JavaScriptCore native executor library for proper JS execution on Android devices.
+## 📂 Native Configuration (Fixes Applied - Updated April 15, 2026)
 
 ### Key Android Configuration
-1. **Package Name:** `com.todoapp`
-2. **Target SDK:** 35 (Android 15)
-3. **Manifest Fixes:** 
-   - `extractNativeLibs="true"` enabled for Samsung M-series compatibility
-   - `usesCleartextTraffic` placeholder defined in `build.gradle`
-4. **Packaging Logic:** 
-   - `useLegacyPackaging = true` set in `app/build.gradle` for universal APK
-   - `splits` disabled to ensure **Universal APK** containing all engines
-5. **Code Stripping:** `MainApplication.kt` stripped of all `DefaultNewArchitectureEntryPoint` calls
+- **Custom Icons:** Integrated via `generate-icons.js` (Resized from source to all densities).
+- **Safe Area Fix:** Global `paddingTop` added in `App.tsx` for notch/status bar compatibility.
+- **MainApplication.kt:** Initialized `SoLoader` with `OpenSourceMergedSoMapping`.
 
 ## 📂 Folder Structure
-- **`src/components/`**: `TaskItem.tsx` (Handles its own editing state and rep counters)
-- **`src/screens/`**: `LoadingScreen.tsx` (System Notice), `HomeScreen.tsx` (Quest Log), and `SkillTreeScreen.tsx` (Status Window)
-- **`src/storage/`**: `taskStorage.ts` (AsyncStorage JSON handling for tasks and XP stats)
-- **`src/utils/`**: `theme.ts` (Neon Blue/Purple/Gold palettes) and `types.ts` (Task & Skill interfaces)
+- **`src/components/`**: `TaskItem.tsx`, `Sidebar.tsx` (System Menu), `LevelUpModal.tsx`, `BottomTabBar.tsx` (Depreciated)
+- **`src/screens/`**: `HomeScreen.tsx`, `SkillTreeScreen.tsx`, `CalendarScreen.tsx` (Chronicles), `RegistrationScreen.tsx`, `SettingsScreen.tsx`, `TestingScreen.tsx` (Console)
+- **`src/storage/`**: `taskStorage.ts` (Includes last-used settings logic and data clearing)
+- **`src/utils/`**: `templates.ts` (Quick Quest Presets), `theme.ts` (Updated palette), `types.ts` (Updated schema)
 
-## 📏 Development Conventions
-- **Hooks Only:** Use `useState` and `useEffect` for all logic
-- **Stable Engine:** Maintain `isNewArchEnabled: false` and `isHermesEnabled: true` in `MainApplication.kt`
-- **Styling:** Always use `SHADOWS.glow` or `SHADOWS.glowCustom(color)` from the theme for the "System" feel
-- **JS Executor:** Hermes (with `OpenSourceMergedSoMapping` fix applied)
+## ✅ Build Status (April 15, 2026)
 
-## ✅ Build Status (April 14, 2026)
+### Major Features Implemented
+1. ✅ **System Navigation**: Animated Sidebar (Glitch Effect) replacing bottom tabs.
+2. ✅ **Input Efficiency**: Preset Dropdown integrated into Quest Name input.
+3. ✅ **Rapid Tracking**: Multi-increment buttons (`+10`, `+25`) for workouts.
+4. ✅ **Smart Categorization**: Sectioned list for Daily/One-Time/Long-Term quests.
+5. ✅ **Recency Logic**: App remembers last used skill/category.
+6. ✅ **Penalty System**: Auto-detects missed daily quests and issues "Physical Conditioning" penalties.
+7. ✅ **Player Registration**: Authorization screen for initial setup.
+8. ✅ **System Chronicles**: Calendar view for tracking completion history.
+9. ✅ **Visual Feedback**: Level-Up modal, improved layout responsiveness, and Hexagon Radar Stats Chart.
+10. ✅ **Memo Pad**: Dedicated screen for non-RPG tasks.
 
-### Issues Found & Fixed
-1. ❌ **New Architecture Entry Point Crash** → ✅ Removed reactHost property override
-2. ❌ **Hermes Library Not Found (libhermes_executor.so)** → ✅ Fixed by initializing `SoLoader` with `OpenSourceMergedSoMapping` instead of `false` in `MainApplication.kt`.
-3. ❌ **Release Build Fails on Device** → ✅ Handled via `--mode=release` and ensuring the emulator or device is connected during the final build step.
-4. ❌ **Missing Properties on Old Tasks** → ✅ Added data migration step in `HomeScreen.tsx` to apply default categories and XP to existing quests.
-
-### Current Build Output
-```
-BUILD SUCCESSFUL in 30s
-83 actionable tasks: 18 executed, 65 up-to-date
-✅ Installed on Samsung device (SM-M315F - 15)
-✅ App launched successfully
-```
-
-### Deployment Status
-- ✅ **APK built successfully** (app-debug.apk and release APK)
-- ✅ **Installed on physical device**
-- ✅ **App running without crashes**
-- ✅ **No native library errors**
-
-## 🔧 Code Context Summary
-
-### MainApplication.kt (Current State)
-```kotlin
-package com.todoapp
-
-import android.app.Application
-import com.facebook.react.PackageList
-import com.facebook.react.ReactApplication
-import com.facebook.react.ReactNativeHost
-import com.facebook.react.ReactPackage
-import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.soloader.OpenSourceMergedSoMapping
-import com.facebook.soloader.SoLoader
-
-class MainApplication : Application(), ReactApplication {
-
-  override val reactNativeHost: ReactNativeHost =
-      object : DefaultReactNativeHost(this) {
-        override fun getPackages(): List<ReactPackage> =
-            PackageList(this).packages.apply {}
-
-        override fun getJSMainModuleName(): String = "index"
-        override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
-        override val isNewArchEnabled: Boolean = false
-        override val isHermesEnabled: Boolean = true
-      }
-
-  override fun onCreate() {
-    super.onCreate()
-    SoLoader.init(this, OpenSourceMergedSoMapping)
-  }
-}
-```
-
-### MainActivity.kt (Current State)
-```kotlin
-package com.todoapp
-
-import com.facebook.react.ReactActivity
-import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.defaults.DefaultReactActivityDelegate
-
-class MainActivity : ReactActivity() {
-
-  override fun getMainComponentName(): String = "TodoApp"
-
-  override fun createReactActivityDelegate(): ReactActivityDelegate =
-      DefaultReactActivityDelegate(this, mainComponentName, false)
-}
-```
-
-### build.gradle (React Configuration)
-```gradle
-/**
- * Hermes enabled for RN 0.76.1
- */
-react {
-    autolinkLibrariesWithApp()
-    hermesEnabled = true
-}
-```
-
-### package.json (Dependencies Added)
-```json
-{
-  "dependencies": {
-    "react": "18.3.1",
-    "react-native": "0.76.1",
-    "@react-native-async-storage/async-storage": "2.1.0"
-  }
-}
-```
-
-## 🎯 Next Steps
-1. Test the XP calculation and rank threshold logic across multiple days
-2. Add a visual pop-up or animation when a skill ranks up
-3. Explore adding daily penalty quests for failing Regular tasks
-4. Test the Release APK installation on a disconnected device
+## 🎯 Next Steps (Post-Implementation)
+1. Add native push notification integration via `@notifee/react-native`.
+2. Implement custom "System" sound effects for actions.
+3. Add detailed quest view for task logs.
 
 

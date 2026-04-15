@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Swi
 import { COLORS, SHADOWS } from '../utils/theme';
 import { loadStats, saveStats } from '../storage/taskStorage';
 import { UserStats } from '../utils/types';
+import { schedulePenaltyNotification } from '../utils/notifications';
+import notifee from '@notifee/react-native';
 
 interface SettingsScreenProps {
   onOpenMenu: () => void;
@@ -14,12 +16,8 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
   useEffect(() => {
     const fetchSettings = async () => {
       const data = await loadStats();
-      // Migration: Ensure notificationSettings exists
       if (!data.notificationSettings) {
-        data.notificationSettings = {
-          enabled: false,
-          interval: 60,
-        };
+        data.notificationSettings = { enabled: false, interval: 60 };
         await saveStats(data);
       }
       setStats(data);
@@ -27,30 +25,34 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
     fetchSettings();
   }, []);
 
-  const updateReminders = (enabled: boolean) => {
+  const updateReminders = async (enabled: boolean) => {
     if (!stats) return;
     const updated = {
       ...stats,
-      notificationSettings: { 
-        enabled,
-        interval: stats.notificationSettings?.interval || 60 
-      }
+      notificationSettings: { ...stats.notificationSettings, enabled }
     };
     setStats(updated);
-    saveStats(updated);
+    await saveStats(updated);
+
+    if (enabled) {
+      await schedulePenaltyNotification(updated.notificationSettings.interval);
+    } else {
+      await notifee.cancelAllNotifications();
+    }
   };
 
-  const updateInterval = (interval: 15 | 30 | 60 | 120) => {
+  const updateInterval = async (interval: 15 | 30 | 60 | 120) => {
     if (!stats) return;
     const updated = {
       ...stats,
-      notificationSettings: { 
-        enabled: stats.notificationSettings?.enabled || false,
-        interval 
-      }
+      notificationSettings: { ...stats.notificationSettings, interval }
     };
     setStats(updated);
-    saveStats(updated);
+    await saveStats(updated);
+
+    if (updated.notificationSettings.enabled) {
+      await schedulePenaltyNotification(interval);
+    }
   };
 
   if (!stats) return null;
@@ -118,7 +120,7 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>SYSTEM INFO</Text>
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>VERSION: 1.0.5</Text>
+            <Text style={styles.infoText}>VERSION: 1.0.6</Text>
             <Text style={styles.infoText}>LICENSE: SOLO LEVELING PROTOCOL</Text>
             <Text style={styles.infoText}>STATUS: OPERATIONAL</Text>
           </View>
