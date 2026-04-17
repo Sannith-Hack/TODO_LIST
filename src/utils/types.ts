@@ -7,7 +7,8 @@ export interface Task {
   text: string;
   completed: boolean;
   createdAt: number;
-  dueDate?: number; // Timestamp for scheduled date
+  dueDate?: number; // Timestamp for scheduled date (start date)
+  deadline?: number; // Timestamp for when the quest expires
   completedAt?: number; // Timestamp when finished
   category: TaskCategory;
   skillType: SkillType;

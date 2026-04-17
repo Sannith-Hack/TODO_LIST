@@ -77,6 +77,11 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
           <Text style={[styles.skillLabel, { color: itemColor }]}>
             {item.isPenalty ? 'SYSTEM' : item.skillType}
           </Text>
+          {item.deadline && !item.completed && (
+            <Text style={styles.deadlineText}>
+              LIMIT: {new Date(item.deadline).toLocaleDateString()}
+            </Text>
+          )}
         </View>
 
         {isEditing ? (
@@ -207,6 +212,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     opacity: 0.8,
+  },
+  deadlineText: {
+    fontSize: 8,
+    color: COLORS.danger,
+    fontWeight: 'bold',
+    marginLeft: 'auto',
+    letterSpacing: 1,
   },
   taskText: {
     color: COLORS.text,

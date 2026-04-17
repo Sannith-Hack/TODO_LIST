@@ -7,7 +7,7 @@ import { QUEST_TEMPLATES } from '../utils/templates';
 import TaskItem from '../components/TaskItem';
 
 // Memoized Creation Panel to prevent keyboard focus loss
-const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, taskInput, setTaskInput, targetCount, setTargetCount }: any) => (
+const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, deadlineDays, setDeadlineDays, taskInput, setTaskInput, targetCount, setTargetCount }: any) => (
     <View style={styles.creationPanel}>
         <View style={styles.creationHeader}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -28,11 +28,23 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
         </View>
         {selectedCategory !== 'Regular' && (
           <View style={styles.scheduleContainer}>
-            <Text style={styles.scheduleLabel}>DATE:</Text>
+            <Text style={styles.scheduleLabel}>START:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {[0, 1, 2, 3, 4, 5, 6, 7].map(offset => (
                 <TouchableOpacity key={offset} onPress={() => setScheduledDays(offset)} style={[styles.offsetItem, scheduledDays === offset && styles.offsetItemActive]}>
                     <Text style={[styles.offsetText, scheduledDays === offset && styles.offsetTextActive]}>{offset === 0 ? 'TODAY' : `+${offset}D`}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+        {selectedCategory === 'LongTerm' && (
+          <View style={styles.scheduleContainer}>
+            <Text style={styles.scheduleLabel}>LIMIT:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {[0, 3, 7, 14, 30].map(offset => (
+                <TouchableOpacity key={offset} onPress={() => setDeadlineDays(offset)} style={[styles.offsetItem, deadlineDays === offset && { borderColor: COLORS.danger, backgroundColor: COLORS.danger + '22' }]}>
+                    <Text style={[styles.offsetText, deadlineDays === offset && { color: COLORS.danger, fontWeight: 'bold' }]}>{offset === 0 ? 'NONE' : `${offset} DAYS`}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -56,26 +68,91 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const [targetCount, setTargetCount] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
   const [scheduledDays, setScheduledDays] = useState(0);
+  const [deadlineDays, setDeadlineDays] = useState(0);
   const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
 
   useEffect(() => {
-    loadTasks().then(setTasks);
-    setIsInitialized(true);
+    const initializeSystem = async () => {
+      const loadedTasks = await loadTasks();
+      const stats = await loadStats();
+      
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const lastReset = new Date(stats.lastResetDate);
+      const lastResetDay = new Date(lastReset.getFullYear(), lastReset.getMonth(), lastReset.getDate()).getTime();
+
+      let currentTasks = [...loadedTasks];
+      let statsUpdated = false;
+
+      // Day Reset Logic
+      if (today > lastResetDay) {
+        // 1. Identify missed daily quests
+        const missedDailies = currentTasks.filter(t => t.category === 'Regular' && !t.completed);
+        
+        // 2. Add Penalty Quest if any missed
+        if (missedDailies.length > 0) {
+          const penaltyQuest: Task = {
+            id: 'penalty-' + Date.now(),
+            text: `PENALTY: COMPLETE MISSED PROTOCOLS (${missedDailies.length})`,
+            completed: false,
+            createdAt: Date.now(),
+            category: 'Regular',
+            skillType: 'Workout', // Penalties are always physical
+            xpValue: 0,
+            isPenalty: true,
+            currentCount: 0,
+            targetCount: missedDailies.length * 50 // 50 reps per missed quest
+          };
+          currentTasks.push(penaltyQuest);
+          Alert.alert('SYSTEM ERROR', 'Daily protocols were incomplete. Penalty Quest has been issued.');
+        }
+
+        // 3. Reset all daily tasks for the new day
+        currentTasks = currentTasks.map(t => 
+          t.category === 'Regular' && !t.isPenalty ? { ...t, completed: false, currentCount: t.skillType === 'Workout' ? 0 : t.currentCount } : t
+        );
+
+        // 4. Update last reset date
+        stats.lastResetDate = Date.now();
+        statsUpdated = true;
+      }
+
+      // Check for Expired Long-Term Quests
+      const expiredLongTerm = currentTasks.filter(t => t.category === 'LongTerm' && !t.completed && t.deadline && t.deadline < today);
+      if (expiredLongTerm.length > 0) {
+        currentTasks = currentTasks.map(t => {
+          if (t.category === 'LongTerm' && !t.completed && t.deadline && t.deadline < today) {
+            return { ...t, isPenalty: true, text: `[FAILED] ${t.text}` };
+          }
+          return t;
+        });
+        Alert.alert('QUEST FAILURE', 'One or more Long-Term quests have expired.');
+      }
+
+      setTasks(currentTasks);
+      if (statsUpdated) await saveStats(stats);
+      setIsInitialized(true);
+    };
+
+    initializeSystem();
   }, []);
 
   useEffect(() => { if (isInitialized) saveTasks(tasks); }, [tasks]);
 
   const addTask = () => {
     if (taskInput.trim() === '') return;
-    const dueDate = scheduledDays > 0 ? new Date().setHours(0,0,0,0) + (scheduledDays * 24 * 60 * 60 * 1000) : undefined;
+    const now = new Date().setHours(0,0,0,0);
+    const dueDate = scheduledDays > 0 ? now + (scheduledDays * 24 * 60 * 60 * 1000) : undefined;
+    const deadline = deadlineDays > 0 ? (dueDate || now) + (deadlineDays * 24 * 60 * 60 * 1000) : undefined;
+    
     const newTask: Task = { 
-        id: Date.now().toString(), text: taskInput.trim(), completed: false, createdAt: Date.now(), dueDate,
+        id: Date.now().toString(), text: taskInput.trim(), completed: false, createdAt: Date.now(), dueDate, deadline,
         category: selectedCategory, skillType: selectedSkill, xpValue: 10,
         currentCount: selectedSkill === 'Workout' ? 0 : undefined,
         targetCount: selectedSkill === 'Workout' ? parseInt(targetCount) || 0 : undefined
     };
     setTasks(prev => [newTask, ...prev]);
-    setTaskInput(''); setTargetCount(''); setScheduledDays(0);
+    setTaskInput(''); setTargetCount(''); setScheduledDays(0); setDeadlineDays(0);
   };
 
   const getSections = () => {
@@ -98,8 +175,26 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         <SectionList
             sections={getSections()}
             keyExtractor={t => t.id}
-            renderItem={({ item }) => <TaskItem item={item} onToggle={(id) => setTasks(prev => prev.map(t => t.id === id ? {...t, completed: !t.completed} : t))} onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} onUpdateCount={(id, c) => setTasks(prev => prev.map(t => t.id === id ? {...t, currentCount: c} : t))} />}
-            ListHeaderComponent={<CreationPanel onAdd={addTask} onShowTemplates={() => setIsTemplatePickerVisible(true)} selectedSkill={selectedSkill} setSelectedSkill={setSelectedSkill} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} scheduledDays={scheduledDays} setScheduledDays={setScheduledDays} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} />}
+            renderItem={({ item }) => <TaskItem item={item} onToggle={(id) => setTasks(prev => prev.map(t => {
+              if (t.id === id) {
+                const completed = !t.completed;
+                return { ...t, completed, completedAt: completed ? Date.now() : undefined };
+              }
+              return t;
+            }))} onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} onUpdateCount={(id, c) => setTasks(prev => {
+              return prev.map(t => {
+                if (t.id === id) {
+                  const updatedTask = { ...t, currentCount: c };
+                  if (t.targetCount && c >= t.targetCount && !t.completed) {
+                    updatedTask.completed = true;
+                    updatedTask.completedAt = Date.now();
+                  }
+                  return updatedTask;
+                }
+                return t;
+              });
+            })} />}
+            ListHeaderComponent={<CreationPanel onAdd={addTask} onShowTemplates={() => setIsTemplatePickerVisible(true)} selectedSkill={selectedSkill} setSelectedSkill={setSelectedSkill} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} scheduledDays={scheduledDays} setScheduledDays={setScheduledDays} deadlineDays={deadlineDays} setDeadlineDays={setDeadlineDays} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} />}
         />
         <Modal visible={isTemplatePickerVisible} transparent animationType="fade" onRequestClose={() => setIsTemplatePickerVisible(false)}>
             <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setIsTemplatePickerVisible(false)}>
