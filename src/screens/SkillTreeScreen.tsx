@@ -76,10 +76,13 @@ const SkillTreeScreen = ({ onOpenMenu }: SkillTreeScreenProps) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.reputationHeader}>
           <Text style={styles.reputationTitle}>{stats.reputationTitle}</Text>
+          <Text style={styles.playerName}>{stats.playerName.toUpperCase()}</Text>
           <View style={styles.divider} />
         </View>
 
-        <RadarChart data={chartData} labels={skillOrder} />
+        <View style={styles.chartSection}>
+          <RadarChart data={chartData} labels={skillOrder.map(s => s.substring(0, 3))} />
+        </View>
 
         <View style={styles.overallStats}>
           <View style={styles.statCircle}>
@@ -138,7 +141,9 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 20 },
   reputationHeader: { alignItems: 'center', marginBottom: 20 },
   reputationTitle: { color: COLORS.primary, fontSize: 24, fontWeight: '900', letterSpacing: 4, textShadowColor: COLORS.primary, textShadowRadius: 15 },
+  playerName: { color: COLORS.text, fontSize: 14, fontWeight: 'bold', letterSpacing: 2, marginTop: 4, opacity: 0.8 },
   divider: { height: 1, backgroundColor: COLORS.primary, width: '60%', marginTop: 8, opacity: 0.5 },
+  chartSection: { alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
   overallStats: { alignItems: 'center', marginBottom: 30 },
   statCircle: { width: 120, height: 120, borderRadius: 60, borderWidth: 2, borderColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, ...SHADOWS.glow, marginBottom: 15 },
   levelLabel: { color: COLORS.textDim, fontSize: 12, fontWeight: 'bold' },

@@ -11,9 +11,9 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
     <View style={styles.creationPanel}>
         <View style={styles.creationHeader}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'].map(s => (
-                    <TouchableOpacity key={s} onPress={() => setSelectedSkill(s)} style={[styles.selectorItem, selectedSkill === s && { borderColor: SKILL_COLORS[s as any], backgroundColor: SKILL_COLORS[s as any] + '22' }]}>
-                        <Text style={[styles.selectorText, selectedSkill === s && { color: SKILL_COLORS[s as any] }]}>{s}</Text>
+                {(['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'] as SkillType[]).map(s => (
+                    <TouchableOpacity key={s} onPress={() => setSelectedSkill(s)} style={[styles.selectorItem, selectedSkill === s && { borderColor: SKILL_COLORS[s], backgroundColor: SKILL_COLORS[s] + '22' }]}>
+                        <Text style={[styles.selectorText, selectedSkill === s && { color: SKILL_COLORS[s] }]}>{s}</Text>
                     </TouchableOpacity>
                 ))}
             </ScrollView>
