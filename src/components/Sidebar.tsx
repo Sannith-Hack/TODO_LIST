@@ -55,7 +55,10 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
   };
 
   return (
-    <View style={[styles.overlayContainer, { pointerEvents: isOpen ? 'auto' : 'none' } as any]}>
+    <View 
+      style={styles.overlayContainer} 
+      pointerEvents={isOpen ? 'auto' : 'none'}
+    >
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[styles.backdrop, { opacity: opacityAnim }]} />
       </TouchableWithoutFeedback>

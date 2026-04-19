@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS } from '../utils/theme';
-import { loadTasks } from '../storage/taskStorage';
-import { Task } from '../utils/types';
+import { loadHistory } from '../storage/taskStorage';
+import { HistoryEntry } from '../utils/types';
 
 interface CalendarScreenProps {
   onOpenMenu: () => void;
@@ -11,13 +11,13 @@ interface CalendarScreenProps {
 const { width } = Dimensions.get('window');
 
 const CalendarScreen = ({ onOpenMenu }: CalendarScreenProps) => {
-  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const [completedEntries, setCompletedEntries] = useState<HistoryEntry[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const allTasks = await loadTasks();
-      setCompletedTasks(allTasks.filter(t => t.completed && t.completedAt));
+      const history = await loadHistory();
+      setCompletedEntries(history);
     };
     fetchHistory();
   }, []);
@@ -41,8 +41,8 @@ const CalendarScreen = ({ onOpenMenu }: CalendarScreenProps) => {
     // Fill actual days
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = new Date(year, month, d).toDateString();
-      const dayTasks = completedTasks.filter(t => 
-        new Date(t.completedAt!).toDateString() === dateStr
+      const dayTasks = completedEntries.filter(t => 
+        new Date(t.completedAt).toDateString() === dateStr
       );
 
       days.push(

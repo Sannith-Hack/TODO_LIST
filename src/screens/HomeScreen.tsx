@@ -2,8 +2,9 @@ import React, { useState, useEffect, memo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats } from '../utils/types';
-import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings } from '../storage/taskStorage';
+import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings, addToHistory } from '../storage/taskStorage';
 import { QUEST_TEMPLATES } from '../utils/templates';
+import { updateSystemNotifications } from '../utils/notifications';
 import TaskItem from '../components/TaskItem';
 
 // Memoized Creation Panel to prevent keyboard focus loss
@@ -44,7 +45,7 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {[0, 3, 7, 14, 30].map(offset => (
                 <TouchableOpacity key={offset} onPress={() => setDeadlineDays(offset)} style={[styles.offsetItem, deadlineDays === offset && { borderColor: COLORS.danger, backgroundColor: COLORS.danger + '22' }]}>
-                    <Text style={[styles.offsetText, deadlineDays === offset && { color: COLORS.danger, fontWeight: 'bold' }]}>{offset === 0 ? 'NONE' : `${offset} DAYS`}</Text>
+                    <Text style={[styles.offsetText, deadlineDays === offset && { color: COLORS.danger, fontWeight: 'bold' }]}>{offset === 0 ? 'UNLIMITED' : `${offset} DAYS`}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -70,15 +71,16 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const [scheduledDays, setScheduledDays] = useState(0);
   const [deadlineDays, setDeadlineDays] = useState(0);
   const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
+  const [stats, setStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
     const initializeSystem = async () => {
       const loadedTasks = await loadTasks();
-      const stats = await loadStats();
+      const loadedStats = await loadStats();
       
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      const lastReset = new Date(stats.lastResetDate);
+      const lastReset = new Date(loadedStats.lastResetDate);
       const lastResetDay = new Date(lastReset.getFullYear(), lastReset.getMonth(), lastReset.getDate()).getTime();
 
       let currentTasks = [...loadedTasks];
@@ -113,7 +115,7 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         );
 
         // 4. Update last reset date
-        stats.lastResetDate = Date.now();
+        loadedStats.lastResetDate = Date.now();
         statsUpdated = true;
       }
 
@@ -130,14 +132,20 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
       }
 
       setTasks(currentTasks);
-      if (statsUpdated) await saveStats(stats);
+      setStats(loadedStats);
+      if (statsUpdated) await saveStats(loadedStats);
       setIsInitialized(true);
     };
 
     initializeSystem();
   }, []);
 
-  useEffect(() => { if (isInitialized) saveTasks(tasks); }, [tasks]);
+  useEffect(() => { 
+    if (isInitialized) {
+      saveTasks(tasks);
+      if (stats) updateSystemNotifications(tasks, stats);
+    }
+  }, [tasks, stats, isInitialized]);
 
   const addTask = () => {
     if (taskInput.trim() === '') return;
@@ -165,6 +173,32 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
     ].filter(s => s.data.length > 0);
   };
 
+  const toggleTask = (id: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === id) {
+        const completed = !t.completed;
+        if (completed) addToHistory(t);
+        return { ...t, completed, completedAt: completed ? Date.now() : undefined };
+      }
+      return t;
+    }));
+  };
+
+  const updateTaskCount = (id: string, c: number) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === id) {
+        const updatedTask = { ...t, currentCount: c };
+        if (t.targetCount && c >= t.targetCount && !t.completed) {
+          updatedTask.completed = true;
+          updatedTask.completedAt = Date.now();
+          addToHistory(updatedTask);
+        }
+        return updatedTask;
+      }
+      return t;
+    }));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -175,25 +209,13 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         <SectionList
             sections={getSections()}
             keyExtractor={t => t.id}
-            renderItem={({ item }) => <TaskItem item={item} onToggle={(id) => setTasks(prev => prev.map(t => {
-              if (t.id === id) {
-                const completed = !t.completed;
-                return { ...t, completed, completedAt: completed ? Date.now() : undefined };
-              }
-              return t;
-            }))} onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} onUpdateCount={(id, c) => setTasks(prev => {
-              return prev.map(t => {
-                if (t.id === id) {
-                  const updatedTask = { ...t, currentCount: c };
-                  if (t.targetCount && c >= t.targetCount && !t.completed) {
-                    updatedTask.completed = true;
-                    updatedTask.completedAt = Date.now();
-                  }
-                  return updatedTask;
-                }
-                return t;
-              });
-            })} />}
+            renderItem={({ item }) => <TaskItem 
+              item={item} 
+              onToggle={toggleTask} 
+              onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} 
+              onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} 
+              onUpdateCount={updateTaskCount} 
+            />}
             ListHeaderComponent={<CreationPanel onAdd={addTask} onShowTemplates={() => setIsTemplatePickerVisible(true)} selectedSkill={selectedSkill} setSelectedSkill={setSelectedSkill} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} scheduledDays={scheduledDays} setScheduledDays={setScheduledDays} deadlineDays={deadlineDays} setDeadlineDays={setDeadlineDays} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} />}
         />
         <Modal visible={isTemplatePickerVisible} transparent animationType="fade" onRequestClose={() => setIsTemplatePickerVisible(false)}>

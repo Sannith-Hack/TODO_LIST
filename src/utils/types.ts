@@ -18,6 +18,15 @@ export interface Task {
   isPenalty?: boolean;
 }
 
+export interface HistoryEntry {
+  id: string;
+  taskId: string;
+  text: string;
+  category: TaskCategory;
+  skillType: SkillType;
+  completedAt: number;
+}
+
 export interface SkillProgress {
   level: number;
   xp: number;

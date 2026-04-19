@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Task, UserStats, SkillType, SkillProgress } from '../utils/types';
+import { Task, UserStats, SkillType, SkillProgress, HistoryEntry } from '../utils/types';
 
 const TASKS_KEY = '@quests_log';
 const STATS_KEY = '@user_status';
 const SETTINGS_KEY = '@user_settings';
+const HISTORY_KEY = '@completion_history';
 
 const INITIAL_SKILL_PROGRESS: SkillProgress = {
   level: 1,
@@ -89,9 +90,41 @@ export const loadStats = async (): Promise<UserStats> => {
   }
 };
 
+export const saveHistory = async (history: HistoryEntry[]): Promise<void> => {
+  try {
+    const jsonValue = JSON.stringify(history);
+    await AsyncStorage.setItem(HISTORY_KEY, jsonValue);
+  } catch (e) {
+    console.error('Failed to save history:', e);
+  }
+};
+
+export const loadHistory = async (): Promise<HistoryEntry[]> => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(HISTORY_KEY);
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.error('Failed to load history:', e);
+    return [];
+  }
+};
+
+export const addToHistory = async (task: Task): Promise<void> => {
+  const history = await loadHistory();
+  const entry: HistoryEntry = {
+    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+    taskId: task.id,
+    text: task.text,
+    category: task.category,
+    skillType: task.skillType,
+    completedAt: Date.now()
+  };
+  await saveHistory([entry, ...history]);
+};
+
 export const clearAllData = async (): Promise<void> => {
   try {
-    await AsyncStorage.multiRemove([TASKS_KEY, STATS_KEY, SETTINGS_KEY]);
+    await AsyncStorage.multiRemove([TASKS_KEY, STATS_KEY, SETTINGS_KEY, HISTORY_KEY]);
   } catch (e) {
     console.error('Failed to clear data:', e);
   }

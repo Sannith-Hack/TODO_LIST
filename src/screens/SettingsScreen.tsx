@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { COLORS, SHADOWS } from '../utils/theme';
-import { loadStats, saveStats } from '../storage/taskStorage';
+import { loadStats, saveStats, loadTasks } from '../storage/taskStorage';
 import { UserStats } from '../utils/types';
-import { schedulePenaltyNotification } from '../utils/notifications';
+import { updateSystemNotifications } from '../utils/notifications';
 import notifee from '@notifee/react-native';
 
 interface SettingsScreenProps {
@@ -34,11 +34,8 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
     setStats(updated);
     await saveStats(updated);
 
-    if (enabled) {
-      await schedulePenaltyNotification(updated.notificationSettings.interval);
-    } else {
-      await notifee.cancelAllNotifications();
-    }
+    const tasks = await loadTasks();
+    await updateSystemNotifications(tasks, updated);
   };
 
   const updateInterval = async (interval: 15 | 30 | 60 | 120) => {
@@ -51,7 +48,8 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
     await saveStats(updated);
 
     if (updated.notificationSettings.enabled) {
-      await schedulePenaltyNotification(interval);
+      const tasks = await loadTasks();
+      await updateSystemNotifications(tasks, updated);
     }
   };
 
