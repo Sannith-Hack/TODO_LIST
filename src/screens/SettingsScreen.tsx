@@ -5,6 +5,7 @@ import { loadStats, saveStats, loadTasks } from '../storage/taskStorage';
 import { UserStats } from '../utils/types';
 import { updateSystemNotifications } from '../utils/notifications';
 import notifee from '@notifee/react-native';
+import { triggerHaptic } from '../utils/feedback';
 
 interface SettingsScreenProps {
   onOpenMenu: () => void;
@@ -27,6 +28,7 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
 
   const updateReminders = async (enabled: boolean) => {
     if (!stats) return;
+    triggerHaptic('impactMedium');
     const updated = {
       ...stats,
       notificationSettings: { ...stats.notificationSettings, enabled }
@@ -40,6 +42,7 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
 
   const updateInterval = async (interval: 15 | 30 | 60 | 120) => {
     if (!stats) return;
+    triggerHaptic('impactLight');
     const updated = {
       ...stats,
       notificationSettings: { ...stats.notificationSettings, interval }

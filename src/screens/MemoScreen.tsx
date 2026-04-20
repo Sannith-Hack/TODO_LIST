@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Keyboard, LayoutAnimation, UIManager } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SHADOWS } from '../utils/theme';
+import { triggerHaptic } from '../utils/feedback';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -40,14 +41,18 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
     saveMemos([newMemo, ...memos]);
     setInput('');
     Keyboard.dismiss();
+    triggerHaptic('impactMedium');
   };
 
   const toggleMemo = (id: string) => {
+    const isCompleting = !memos.find(m => m.id === id)?.completed;
     saveMemos(memos.map(m => m.id === id ? { ...m, completed: !m.completed } : m));
+    triggerHaptic(isCompleting ? 'notificationSuccess' : 'impactLight');
   };
 
   const deleteMemo = (id: string) => {
     saveMemos(memos.filter(m => m.id !== id));
+    triggerHaptic('impactMedium');
   };
 
   const sortedMemos = [...memos].sort((a, b) => {

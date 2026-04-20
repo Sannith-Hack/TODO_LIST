@@ -6,6 +6,8 @@ import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleB
 import { QUEST_TEMPLATES } from '../utils/templates';
 import { updateSystemNotifications } from '../utils/notifications';
 import TaskItem from '../components/TaskItem';
+import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
+import LevelUpModal from '../components/LevelUpModal';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -76,12 +78,14 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const [deadlineDays, setDeadlineDays] = useState(0);
   const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [levelUpData, setLevelUpData] = useState<{ level: number } | null>(null);
 
   useEffect(() => {
     const initializeSystem = async () => {
       const loadedTasks = await loadTasks();
       const loadedStats = await loadStats();
-      
+// ... (rest of initializeSystem)
+
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const lastReset = new Date(loadedStats.lastResetDate);
@@ -189,7 +193,32 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
     setTasks(prev => prev.map(t => {
       if (t.id === id) {
         const completed = !t.completed;
-        if (completed) addToHistory(t);
+        if (completed) {
+          addToHistory(t);
+          triggerHaptic('notificationSuccess');
+          playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+          
+          // Handle XP Gain
+          if (stats) {
+            const skill = t.skillType;
+            const xpGain = t.xpValue || 10;
+            const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
+            
+            const newStats = { ...stats };
+            newStats.skills[skill] = updatedSkill;
+            newStats.totalXp += xpGain;
+            
+            if (levelUpCount > 0) {
+              newStats.totalLevel += levelUpCount;
+              newStats.statPoints += levelUpCount * 3;
+              newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
+              setLevelUpData({ level: newStats.totalLevel });
+              triggerHaptic('impactHeavy');
+              playSound(FEEDBACK_SOUNDS.LEVEL_UP);
+            }
+            setStats(newStats);
+          }
+        }
         return { ...t, completed, completedAt: completed ? Date.now() : undefined };
       }
       return t;
@@ -209,6 +238,32 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         updatedTask.completedAt = Date.now();
         addToHistory(updatedTask);
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        
+        triggerHaptic('notificationSuccess');
+        playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+
+        // Handle XP Gain
+        if (stats) {
+          const skill = task.skillType;
+          const xpGain = task.xpValue || 10;
+          const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
+          
+          const newStats = { ...stats };
+          newStats.skills[skill] = updatedSkill;
+          newStats.totalXp += xpGain;
+          
+          if (levelUpCount > 0) {
+            newStats.totalLevel += levelUpCount;
+            newStats.statPoints += levelUpCount * 3;
+            newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
+            setLevelUpData({ level: newStats.totalLevel });
+            triggerHaptic('impactHeavy');
+            playSound(FEEDBACK_SOUNDS.LEVEL_UP);
+          }
+          setStats(newStats);
+        }
+      } else {
+        triggerHaptic('impactLight');
       }
       
       const newTasks = [...prev];
@@ -233,11 +288,12 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
               onDelete={(id) => {
                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                 setTasks(prev => prev.filter(t => t.id !== id));
+                triggerHaptic('impactMedium');
               }} 
               onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} 
               onUpdateCount={updateTaskCount} 
             />}
-            ListHeaderComponent={<CreationPanel onAdd={addTask} onShowTemplates={() => setIsTemplatePickerVisible(true)} selectedSkill={selectedSkill} setSelectedSkill={setSelectedSkill} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} scheduledDays={scheduledDays} setScheduledDays={setScheduledDays} deadlineDays={deadlineDays} setDeadlineDays={setDeadlineDays} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} />}
+            ListHeaderComponent={<CreationPanel onAdd={() => { addTask(); triggerHaptic('impactMedium'); }} onShowTemplates={() => { setIsTemplatePickerVisible(true); triggerHaptic('impactLight'); }} selectedSkill={selectedSkill} setSelectedSkill={(s: any) => { setSelectedSkill(s); triggerHaptic('impactLight'); }} selectedCategory={selectedCategory} setSelectedCategory={(c: any) => { setSelectedCategory(c); triggerHaptic('impactLight'); }} scheduledDays={scheduledDays} setScheduledDays={(d: any) => { setScheduledDays(d); triggerHaptic('impactLight'); }} deadlineDays={deadlineDays} setDeadlineDays={(d: any) => { setDeadlineDays(d); triggerHaptic('impactLight'); }} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} />}
         />
         <Modal visible={isTemplatePickerVisible} transparent animationType="fade" onRequestClose={() => setIsTemplatePickerVisible(false)}>
             <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setIsTemplatePickerVisible(false)}>
@@ -245,7 +301,7 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
                     <Text style={styles.modalTitle}>PRESETS</Text>
                     <ScrollView>
                         {QUEST_TEMPLATES[selectedSkill].map((t) => (
-                            <TouchableOpacity key={t.id} style={styles.templateItem} onPress={() => { setTaskInput(t.name); setTargetCount(t.targetCount?.toString() || ''); setSelectedCategory(t.category); setIsTemplatePickerVisible(false); }}>
+                            <TouchableOpacity key={t.id} style={styles.templateItem} onPress={() => { setTaskInput(t.name); setTargetCount(t.targetCount?.toString() || ''); setSelectedCategory(t.category); setIsTemplatePickerVisible(false); triggerHaptic('impactMedium'); }}>
                                 <Text style={styles.templateName}>{t.name}</Text>
                             </TouchableOpacity>
                         ))}
@@ -253,6 +309,12 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
                 </View>
             </TouchableOpacity>
         </Modal>
+        {levelUpData && (
+          <LevelUpModal 
+            level={levelUpData.level} 
+            onClose={() => setLevelUpData(null)} 
+          />
+        )}
     </SafeAreaView>
   );
 };

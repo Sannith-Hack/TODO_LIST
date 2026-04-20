@@ -15,6 +15,8 @@
     "jsc-android": "^250231.0.0",
     "react": "18.3.1",
     "react-native": "0.76.1",
+    "react-native-haptic-feedback": "^3.0.0",
+    "react-native-sound": "^0.13.0",
     "react-native-svg": "^7.2.1",
     "react-native-svg-charts": "^5.4.0"
   },

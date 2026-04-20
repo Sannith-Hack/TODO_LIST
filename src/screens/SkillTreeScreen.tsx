@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS } from '../utils/theme';
 import { UserStats, SkillType } from '../utils/types';
-import { loadStats, saveStats } from '../storage/taskStorage';
+import { loadStats, saveStats, getTitleByLevel } from '../storage/taskStorage';
 import RadarChart from '../components/RadarChart';
+import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
 
 interface SkillTreeScreenProps {
   onOpenMenu: () => void;
@@ -23,6 +24,7 @@ const SkillTreeScreen = ({ onOpenMenu }: SkillTreeScreenProps) => {
   const handleSpendPoint = (skillName: SkillType) => {
     if (!stats || stats.statPoints <= 0) {
       Alert.alert('Insufficient Points', 'You have no available Stat Points to distribute.');
+      triggerHaptic('notificationError');
       return;
     }
     const skill = stats.skills[skillName];
@@ -43,15 +45,26 @@ const SkillTreeScreen = ({ onOpenMenu }: SkillTreeScreenProps) => {
       else if (newLevel >= 20) newRank = 'C';
       else if (newLevel >= 10) newRank = 'D';
     }
+    
+    const finalLevel = stats.totalLevel + totalLevelGain;
     const newStats: UserStats = {
       ...stats,
       statPoints: stats.statPoints - 1,
-      totalLevel: stats.totalLevel + totalLevelGain,
+      totalLevel: finalLevel,
+      reputationTitle: getTitleByLevel(finalLevel),
       skills: {
         ...stats.skills,
         [skillName]: { ...skill, level: newLevel, xp: newXp, requiredXp: newReqXp, rank: newRank, }
       }
     };
+
+    if (totalLevelGain > 0) {
+      triggerHaptic('impactHeavy');
+      playSound(FEEDBACK_SOUNDS.LEVEL_UP);
+    } else {
+      triggerHaptic('impactMedium');
+    }
+
     setStats(newStats);
     saveStats(newStats);
   };
