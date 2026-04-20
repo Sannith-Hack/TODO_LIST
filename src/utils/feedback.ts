@@ -46,6 +46,7 @@ export const playSound = (name: string, volume: number = 1.0) => {
 
 export const FEEDBACK_SOUNDS = {
   QUEST_COMPLETE: Platform.OS === 'android' ? 'quest_complete' : 'quest_complete.mp3',
+  PENALTY_COMPLETE: Platform.OS === 'android' ? 'penalty_complete' : 'penalty_complete.mp3',
   LEVEL_UP: Platform.OS === 'android' ? 'level_up' : 'level_up.mp3',
   BUTTON_CLICK: Platform.OS === 'android' ? 'button_click' : 'button_click.mp3',
 };

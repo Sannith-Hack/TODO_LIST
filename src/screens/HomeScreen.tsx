@@ -195,11 +195,17 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         const completed = !t.completed;
         if (completed) {
           addToHistory(t);
-          triggerHaptic('notificationSuccess');
-          playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+          
+          if (t.isPenalty) {
+            triggerHaptic('notificationWarning');
+            playSound(FEEDBACK_SOUNDS.PENALTY_COMPLETE);
+          } else {
+            triggerHaptic('notificationSuccess');
+            playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+          }
           
           // Handle XP Gain
-          if (stats) {
+          if (stats && !t.isPenalty) {
             const skill = t.skillType;
             const xpGain = t.xpValue || 10;
             const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
@@ -239,11 +245,16 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         addToHistory(updatedTask);
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         
-        triggerHaptic('notificationSuccess');
-        playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+        if (task.isPenalty) {
+          triggerHaptic('notificationWarning');
+          playSound(FEEDBACK_SOUNDS.PENALTY_COMPLETE);
+        } else {
+          triggerHaptic('notificationSuccess');
+          playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+        }
 
         // Handle XP Gain
-        if (stats) {
+        if (stats && !task.isPenalty) {
           const skill = task.skillType;
           const xpGain = task.xpValue || 10;
           const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
@@ -263,7 +274,7 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
           setStats(newStats);
         }
       } else {
-        triggerHaptic('impactLight');
+        triggerHaptic(task.isPenalty ? 'impactMedium' : 'impactLight');
       }
       
       const newTasks = [...prev];
