@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform, LayoutAnimation, UIManager } from 'react-native';
-import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
+import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS, getRankTheme } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats } from '../utils/types';
 import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings, addToHistory } from '../storage/taskStorage';
 import { QUEST_TEMPLATES } from '../utils/templates';
@@ -8,13 +8,14 @@ import { updateSystemNotifications } from '../utils/notifications';
 import TaskItem from '../components/TaskItem';
 import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
 import LevelUpModal from '../components/LevelUpModal';
+import { ParticleEffect } from '../components/ParticleEffect';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 // Memoized Creation Panel to prevent keyboard focus loss
-const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, deadlineDays, setDeadlineDays, taskInput, setTaskInput, targetCount, setTargetCount }: any) => (
+const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, deadlineDays, setDeadlineDays, taskInput, setTaskInput, targetCount, setTargetCount, primaryColor }: any) => (
     <View style={styles.creationPanel}>
         <View style={styles.creationHeader}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -24,7 +25,7 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
                     </TouchableOpacity>
                 ))}
             </ScrollView>
-            <TouchableOpacity style={styles.templateToggle} onPress={onShowTemplates}><Text style={styles.templateToggleText}>PRESETS</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.templateToggle, { borderColor: primaryColor, backgroundColor: primaryColor + '11' }]} onPress={onShowTemplates}><Text style={[styles.templateToggleText, { color: primaryColor }]}>PRESETS</Text></TouchableOpacity>
         </View>
         <View style={styles.categorySelectorContainer}>
             {(['Regular', 'OneTime', 'LongTerm'] as TaskCategory[]).map(cat => (
@@ -35,11 +36,11 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
         </View>
         {selectedCategory !== 'Regular' && (
           <View style={styles.scheduleContainer}>
-            <Text style={styles.scheduleLabel}>START:</Text>
+            <Text style={[styles.scheduleLabel, { color: primaryColor }]}>START:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {[0, 1, 2, 3, 4, 5, 6, 7].map(offset => (
-                <TouchableOpacity key={offset} onPress={() => setScheduledDays(offset)} style={[styles.offsetItem, scheduledDays === offset && styles.offsetItemActive]}>
-                    <Text style={[styles.offsetText, scheduledDays === offset && styles.offsetTextActive]}>{offset === 0 ? 'TODAY' : `+${offset}D`}</Text>
+                <TouchableOpacity key={offset} onPress={() => setScheduledDays(offset)} style={[styles.offsetItem, scheduledDays === offset && { borderColor: primaryColor, backgroundColor: primaryColor + '22' }]}>
+                    <Text style={[styles.offsetText, scheduledDays === offset && { color: primaryColor, fontWeight: 'bold' }]}>{offset === 0 ? 'TODAY' : `+${offset}D`}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -47,7 +48,7 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
         )}
         {selectedCategory === 'LongTerm' && (
           <View style={styles.scheduleContainer}>
-            <Text style={styles.scheduleLabel}>LIMIT:</Text>
+            <Text style={[styles.scheduleLabel, { color: primaryColor }]}>LIMIT:</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {[0, 3, 7, 14, 30].map(offset => (
                 <TouchableOpacity key={offset} onPress={() => setDeadlineDays(offset)} style={[styles.offsetItem, deadlineDays === offset && { borderColor: COLORS.danger, backgroundColor: COLORS.danger + '22' }]}>
@@ -59,7 +60,7 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
         )}
         <View style={styles.inputRow}>
             <TextInput style={styles.input} placeholder="[+] QUEST NAME" placeholderTextColor={COLORS.textDim} value={taskInput} onChangeText={setTaskInput} />
-            <TouchableOpacity style={styles.addButton} onPress={onAdd}><Text style={styles.addButtonText}>ADD</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.addButton, { backgroundColor: primaryColor }]} onPress={onAdd}><Text style={styles.addButtonText}>ADD</Text></TouchableOpacity>
         </View>
         {selectedSkill === 'Workout' && (
             <TextInput style={[styles.input, {marginTop: 10}]} placeholder="[+] REPS (e.g. 50)" placeholderTextColor={COLORS.textDim} value={targetCount} onChangeText={setTargetCount} keyboardType="numeric" />
@@ -79,11 +80,19 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [levelUpData, setLevelUpData] = useState<{ level: number } | null>(null);
+  const [userRank, setUserRank] = useState('E');
+  const [deletingTask, setDeletingTask] = useState<{ id: string, x: number, y: number, color: string } | null>(null);
+
+  const rankTheme = getRankTheme(userRank);
+  const primaryColor = rankTheme.primary;
 
   useEffect(() => {
     const initializeSystem = async () => {
       const loadedTasks = await loadTasks();
       const loadedStats = await loadStats();
+      
+      const rank = loadedStats.reputationTitle.split('-')[0];
+      setUserRank(rank || 'E');
 // ... (rest of initializeSystem)
 
       const now = new Date();
@@ -221,6 +230,9 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
               setLevelUpData({ level: newStats.totalLevel });
               triggerHaptic('impactHeavy');
               playSound(FEEDBACK_SOUNDS.LEVEL_UP);
+              
+              const newRank = newStats.reputationTitle.split('-')[0];
+              setUserRank(newRank || 'E');
             }
             setStats(newStats);
           }
@@ -270,6 +282,9 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
             setLevelUpData({ level: newStats.totalLevel });
             triggerHaptic('impactHeavy');
             playSound(FEEDBACK_SOUNDS.LEVEL_UP);
+            
+            const newRank = newStats.reputationTitle.split('-')[0];
+            setUserRank(newRank || 'E');
           }
           setStats(newStats);
         }
@@ -286,8 +301,8 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   return (
     <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-            <TouchableOpacity onPress={onOpenMenu}><Text style={styles.menuText}>MENU</Text></TouchableOpacity>
-            <Text style={styles.title}>QUEST LOG</Text>
+            <TouchableOpacity onPress={onOpenMenu}><Text style={[styles.menuText, { color: primaryColor }]}>MENU</Text></TouchableOpacity>
+            <Text style={[styles.title, { color: primaryColor }]}>QUEST LOG</Text>
             <View style={{width: 40}} />
         </View>
         <SectionList
@@ -297,15 +312,26 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
               item={item} 
               onToggle={toggleTask} 
               onDelete={(id) => {
-                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                setTasks(prev => prev.filter(t => t.id !== id));
-                triggerHaptic('impactMedium');
+                setDeletingTask({ id, x: 100, y: 300, color: SKILL_COLORS[item.skillType] || primaryColor });
+                setTimeout(() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setTasks(prev => prev.filter(t => t.id !== id));
+                  triggerHaptic('impactMedium');
+                }, 300);
               }} 
               onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} 
               onUpdateCount={updateTaskCount} 
             />}
-            ListHeaderComponent={<CreationPanel onAdd={() => { addTask(); triggerHaptic('impactMedium'); }} onShowTemplates={() => { setIsTemplatePickerVisible(true); triggerHaptic('impactLight'); }} selectedSkill={selectedSkill} setSelectedSkill={(s: any) => { setSelectedSkill(s); triggerHaptic('impactLight'); }} selectedCategory={selectedCategory} setSelectedCategory={(c: any) => { setSelectedCategory(c); triggerHaptic('impactLight'); }} scheduledDays={scheduledDays} setScheduledDays={(d: any) => { setScheduledDays(d); triggerHaptic('impactLight'); }} deadlineDays={deadlineDays} setDeadlineDays={(d: any) => { setDeadlineDays(d); triggerHaptic('impactLight'); }} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} />}
+            ListHeaderComponent={<CreationPanel onAdd={() => { addTask(); triggerHaptic('impactMedium'); }} onShowTemplates={() => { setIsTemplatePickerVisible(true); triggerHaptic('impactLight'); }} selectedSkill={selectedSkill} setSelectedSkill={(s: any) => { setSelectedSkill(s); triggerHaptic('impactLight'); }} selectedCategory={selectedCategory} setSelectedCategory={(c: any) => { setSelectedCategory(c); triggerHaptic('impactLight'); }} scheduledDays={scheduledDays} setScheduledDays={(d: any) => { setScheduledDays(d); triggerHaptic('impactLight'); }} deadlineDays={deadlineDays} setDeadlineDays={(d: any) => { setDeadlineDays(d); triggerHaptic('impactLight'); }} taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} primaryColor={primaryColor} />}
         />
+        {deletingTask && (
+          <ParticleEffect 
+            x={deletingTask.x} 
+            y={deletingTask.y} 
+            color={deletingTask.color} 
+            onComplete={() => setDeletingTask(null)} 
+          />
+        )}
         <Modal visible={isTemplatePickerVisible} transparent animationType="fade" onRequestClose={() => setIsTemplatePickerVisible(false)}>
             <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setIsTemplatePickerVisible(false)}>
                 <View style={styles.modalContent}>

@@ -52,6 +52,34 @@
         }
       }
     },
+    "@shopify/react-native-skia": {
+      "root": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\@shopify\\react-native-skia",
+      "name": "@shopify/react-native-skia",
+      "platforms": {
+        "ios": {
+          "podspecPath": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\@shopify\\react-native-skia\\react-native-skia.podspec",
+          "version": "2.6.2",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\@shopify\\react-native-skia\\android",
+          "packageImportPath": "import com.shopify.reactnative.skia.RNSkiaPackage;",
+          "packageInstance": "new RNSkiaPackage()",
+          "buildTypes": [],
+          "libraryName": "rnskia",
+          "componentDescriptors": [
+            "SkiaPictureViewComponentDescriptor",
+            "SkiaWebGPUViewComponentDescriptor"
+          ],
+          "cmakeListsPath": "D:/User/Desktop/TODO_LIST/node_modules/@shopify/react-native-skia/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "react-native-haptic-feedback": {
       "root": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-haptic-feedback",
       "name": "react-native-haptic-feedback",
@@ -70,6 +98,31 @@
           "libraryName": "RNHapticFeedbackSpec",
           "componentDescriptors": [],
           "cmakeListsPath": "D:/User/Desktop/TODO_LIST/node_modules/react-native-haptic-feedback/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "react-native-reanimated": {
+      "root": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-reanimated",
+      "name": "react-native-reanimated",
+      "platforms": {
+        "ios": {
+          "podspecPath": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-reanimated\\RNReanimated.podspec",
+          "version": "3.16.1",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-reanimated\\android",
+          "packageImportPath": "import com.swmansion.reanimated.ReanimatedPackage;",
+          "packageInstance": "new ReanimatedPackage()",
+          "buildTypes": [],
+          "libraryName": "rnreanimated",
+          "componentDescriptors": [],
+          "cmakeListsPath": "D:/User/Desktop/TODO_LIST/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
