@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
-import { Task } from '../utils/types';
+import { Task, SubTask } from '../utils/types';
 
 interface TaskItemProps {
   item: Task;
@@ -9,11 +9,16 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
   onUpdate: (id: string, text: string) => void;
   onUpdateCount?: (id: string, newCount: number) => void;
+  onToggleSubTask?: (taskId: string, subTaskId: string) => void;
+  onAddSubTask?: (taskId: string, text: string) => void;
+  onArchive?: (id: string) => void;
 }
 
-const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskItemProps) => {
+const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleSubTask, onAddSubTask, onArchive }: TaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
+  const [newSubTask, setNewSubTask] = useState('');
+  const [showSubTasks, setShowSubTasks] = useState(false);
 
   const handleUpdate = () => {
     if (editText.trim().length > 0) {
@@ -37,6 +42,13 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
   const handleDecrement = () => {
     if (onUpdateCount && item.currentCount !== undefined && item.currentCount > 0) {
       onUpdateCount(item.id, item.currentCount - 1);
+    }
+  };
+
+  const handleAddSubTask = () => {
+    if (newSubTask.trim() && onAddSubTask) {
+      onAddSubTask(item.id, newSubTask.trim());
+      setNewSubTask('');
     }
   };
 
@@ -136,6 +148,39 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
             </View>
           </View>
         )}
+
+        {item.category === 'LongTerm' && !isEditing && (
+          <View style={styles.subTaskSection}>
+            <TouchableOpacity onPress={() => setShowSubTasks(!showSubTasks)} style={styles.subTaskToggle}>
+              <Text style={styles.subTaskToggleText}>
+                {showSubTasks ? '[-] HIDE SUB-QUESTS' : `[+] SUB-QUESTS (${item.subTasks?.length || 0})`}
+              </Text>
+            </TouchableOpacity>
+            
+            {showSubTasks && (
+              <View style={styles.subTaskList}>
+                {item.subTasks?.map(st => (
+                  <TouchableOpacity key={st.id} style={styles.subTaskItem} onPress={() => onToggleSubTask?.(item.id, st.id)}>
+                    <View style={[styles.subCheckbox, st.completed && { backgroundColor: itemColor }]} />
+                    <Text style={[styles.subTaskText, st.completed && styles.subTaskTextCompleted]}>{st.text}</Text>
+                  </TouchableOpacity>
+                ))}
+                <View style={styles.addSubTaskRow}>
+                  <TextInput
+                    style={styles.subTaskInput}
+                    placeholder="NEW SUB-QUEST..."
+                    placeholderTextColor={COLORS.textDim}
+                    value={newSubTask}
+                    onChangeText={setNewSubTask}
+                  />
+                  <TouchableOpacity onPress={handleAddSubTask}>
+                    <Text style={[styles.addSubTaskBtn, { color: itemColor }]}>ADD</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={styles.actionButtons}>
@@ -145,6 +190,11 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount }: TaskIte
           </TouchableOpacity>
         ) : (
           <>
+            {item.completed && !item.isArchived && onArchive && (
+               <TouchableOpacity onPress={() => onArchive(item.id)} style={styles.actionButton}>
+                <Text style={styles.archiveButtonText}>ARCHIVE</Text>
+              </TouchableOpacity>
+            )}
             {!item.isPenalty && (
               <TouchableOpacity 
                 onPress={() => setIsEditing(true)} 
@@ -282,6 +332,62 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '900',
   },
+  subTaskSection: {
+    marginTop: 10,
+    borderTopWidth: 0.5,
+    borderTopColor: COLORS.border,
+    paddingTop: 5,
+  },
+  subTaskToggle: {
+    paddingVertical: 4,
+  },
+  subTaskToggleText: {
+    color: COLORS.primary,
+    fontSize: 9,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
+  subTaskList: {
+    marginTop: 5,
+    paddingLeft: 10,
+  },
+  subTaskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  subCheckbox: {
+    width: 12,
+    height: 12,
+    borderWidth: 1,
+    borderColor: COLORS.textDim,
+    marginRight: 8,
+  },
+  subTaskText: {
+    color: COLORS.text,
+    fontSize: 12,
+  },
+  subTaskTextCompleted: {
+    color: COLORS.textDim,
+    textDecorationLine: 'line-through',
+  },
+  addSubTaskRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  subTaskInput: {
+    flex: 1,
+    color: COLORS.text,
+    fontSize: 11,
+    padding: 2,
+    backgroundColor: COLORS.background,
+    marginRight: 10,
+  },
+  addSubTaskBtn: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
   actionButtons: {
     flexDirection: 'column',
     marginLeft: 8,
@@ -304,6 +410,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
   },
+  archiveButtonText: {
+    color: COLORS.accent,
+    fontSize: 9,
+    fontWeight: 'bold',
+  }
 });
 
 export default TaskItem;

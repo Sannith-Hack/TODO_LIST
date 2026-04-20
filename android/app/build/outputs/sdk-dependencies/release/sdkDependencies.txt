@@ -1158,6 +1158,19 @@ library {
 }
 library {
   maven_library {
+    groupId: "androidx.transition"
+    artifactId: "transition"
+    version: "1.1.0"
+  }
+  digests {
+    sha256: "\275\216L\374B\207Qe\237\225\275\316\307\344\217\200\253\237jO\374qo\000\314\032>\217\206\350\363x"
+  }
+  repo_index {
+    value: 2
+  }
+}
+library {
+  maven_library {
     groupId: "com.facebook.react"
     artifactId: "hermes-android"
     version: "0.76.1"
@@ -1679,6 +1692,12 @@ library_dependencies {
 }
 library_dependencies {
   library_index: 90
+  library_dep_index: 8
+  library_dep_index: 11
+  library_dep_index: 10
+}
+library_dependencies {
+  library_index: 91
   library_dep_index: 48
   library_dep_index: 73
   library_dep_index: 8
@@ -1687,13 +1706,16 @@ module_dependencies {
   module_name: "base"
   dependency_index: 0
   dependency_index: 5
-  dependency_index: 90
+  dependency_index: 91
   dependency_index: 76
   dependency_index: 77
   dependency_index: 13
   dependency_index: 82
   dependency_index: 88
   dependency_index: 38
+  dependency_index: 73
+  dependency_index: 90
+  dependency_index: 11
 }
 repositories {
   maven_repo {

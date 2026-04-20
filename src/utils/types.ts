@@ -2,20 +2,32 @@ export type SkillType = 'Coding' | 'Workout' | 'Cultural' | 'Sports' | 'Mental';
 
 export type TaskCategory = 'Regular' | 'OneTime' | 'LongTerm';
 
+export type TaskFrequency = 'Daily' | 'Weekly' | 'Custom';
+
+export interface SubTask {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   text: string;
   completed: boolean;
   createdAt: number;
-  dueDate?: number; // Timestamp for scheduled date (start date)
-  deadline?: number; // Timestamp for when the quest expires
-  completedAt?: number; // Timestamp when finished
+  dueDate?: number; 
+  deadline?: number; 
+  completedAt?: number;
   category: TaskCategory;
   skillType: SkillType;
   currentCount?: number;
   targetCount?: number;
   xpValue: number;
   isPenalty?: boolean;
+  subTasks?: SubTask[];
+  frequency?: TaskFrequency;
+  recurringDays?: number; // For 'Custom' (every X days)
+  isArchived?: boolean;
 }
 
 export interface HistoryEntry {
@@ -44,6 +56,6 @@ export interface UserStats {
   lastResetDate: number;
   notificationSettings: {
     enabled: boolean;
-    interval: 15 | 30 | 60 | 120; // Minutes
+    interval: 15 | 30 | 60 | 120;
   };
 }

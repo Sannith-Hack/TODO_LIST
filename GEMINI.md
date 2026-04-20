@@ -57,6 +57,10 @@ A production-quality To-Do List mobile application built with **React Native CLI
 4. ✅ **Audio Integration**: System-themed SFX for Quest Completion and Level Up events.
 5. ✅ **Level Up Protocol**: Integrated `LevelUpModal` with XP calculations in the Quest Log.
 6. ✅ **Keyboard Stability**: Input fields are now stable and do not lose focus.
+7. ✅ **Advanced Task Management**:
+    *   **Sub-Quests**: Multi-step checklists for Long-Term goals.
+    *   **Smart Patterns**: Selection for Daily, Weekly, or Custom recurring cycles.
+    *   **Search & Archive**: Real-time filtering and dedicated archive storage for Quest Log and Memo Pad.
 
 ## 🎯 Next Steps (Optional Enhancements)
 1. Build a detailed quest view for task logs and descriptions.

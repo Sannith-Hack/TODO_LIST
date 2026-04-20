@@ -123,10 +123,3 @@
 
 
   npx react-native run-android --mode=release --no-packager
-  2. Glitch/Particle Animations: ⚠️ PARTIALLY IMPLEMENTED
-   * Glitch Effect: The Sidebar already has a "Glitch Effect" (as noted in your GEMINI.md), but the "dissolving into blue particles" for quest deletion has not been implemented yet.
-   * Requirement: This would require installing react-native-reanimated and react-native-skia (or a similar particle engine) to achieve that high-end visual effect.
-
-  3. Rank-Based UI Evolution: ❌ NOT YET IMPLEMENTED
-   * Currently, the app calculates your Rank (E, D, C, B, A, S) in the background, but the UI theme (colors/glows) remains the same blue regardless of your Rank.
-   * Recommendation: We can update the theme.ts and the TaskItem component so that if you reach S-Rank, the glow changes from Neon Blue to Gold/Purple.

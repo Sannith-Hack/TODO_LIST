@@ -51,7 +51,9 @@ INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml
 MERGED from [:react-native-sound] D:\User\Desktop\TODO_LIST\node_modules\react-native-sound\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-15:12
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
+MERGED from [:shopify_react-native-skia] D:\User\Desktop\TODO_LIST\node_modules\@shopify\react-native-skia\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:3:1-8:12
 MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-9:12
+MERGED from [:react-native-reanimated] D:\User\Desktop\TODO_LIST\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:2:1-12:12
 MERGED from [androidx.work:work-runtime:2.8.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\01ab4a40946cafc93ea9b5ac1434f461\transformed\work-runtime-2.8.0\AndroidManifest.xml:17:1-145:12
@@ -81,6 +83,7 @@ MERGED from [com.facebook.fresco:ui-common:3.2.0] C:\Users\Admin\.gradle\caches\
 MERGED from [com.facebook.fresco:soloader:3.2.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\4ba1c4f24cf7165a7793ade6584d9d1f\transformed\soloader-3.2.0\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.fresco:fbcore:3.2.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\fb63a6061aab6aa9faa691bc17bb7d0d\transformed\fbcore-3.2.0\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.react:hermes-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\0444bbaa768090ca4c1f262d497e364f\transformed\hermes-android-0.76.1-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.transition:transition:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d81a798ce55566873b52f956053aa5eb\transformed\transition-1.1.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.autofill:autofill:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\1c665c1a1ce5a42b88670aab98e2be94\transformed\autofill-1.1.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\69778834a0f037e6ef91dd14cf44f327\transformed\swiperefreshlayout-1.1.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\888add950885547aef72bd9714859480\transformed\drawerlayout-1.0.0\AndroidManifest.xml:17:1-22:12
@@ -157,8 +160,12 @@ MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@noti
 MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:shopify_react-native-skia] D:\User\Desktop\TODO_LIST\node_modules\@shopify\react-native-skia\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:6:5-44
+MERGED from [:shopify_react-native-skia] D:\User\Desktop\TODO_LIST\node_modules\@shopify\react-native-skia\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:6:5-44
 MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-reanimated] D:\User\Desktop\TODO_LIST\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-reanimated] D:\User\Desktop\TODO_LIST\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:10:5-44
@@ -217,6 +224,8 @@ MERGED from [com.facebook.fresco:fbcore:3.2.0] C:\Users\Admin\.gradle\caches\8.1
 MERGED from [com.facebook.fresco:fbcore:3.2.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\fb63a6061aab6aa9faa691bc17bb7d0d\transformed\fbcore-3.2.0\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.react:hermes-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\0444bbaa768090ca4c1f262d497e364f\transformed\hermes-android-0.76.1-release\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.react:hermes-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\0444bbaa768090ca4c1f262d497e364f\transformed\hermes-android-0.76.1-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.transition:transition:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d81a798ce55566873b52f956053aa5eb\transformed\transition-1.1.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.transition:transition:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d81a798ce55566873b52f956053aa5eb\transformed\transition-1.1.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.autofill:autofill:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\1c665c1a1ce5a42b88670aab98e2be94\transformed\autofill-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.autofill:autofill:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\1c665c1a1ce5a42b88670aab98e2be94\transformed\autofill-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.swiperefreshlayout:swiperefreshlayout:1.1.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\69778834a0f037e6ef91dd14cf44f327\transformed\swiperefreshlayout-1.1.0\AndroidManifest.xml:20:5-22:41
