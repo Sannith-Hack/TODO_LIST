@@ -3,7 +3,11 @@ import Sound from 'react-native-sound';
 import { Platform } from 'react-native';
 
 // Enable playback in silence mode
-Sound.setCategory('Playback');
+try {
+  Sound.setCategory('Playback');
+} catch (e) {
+  console.warn('Sound.setCategory failed', e);
+}
 
 const hapticOptions = {
   enableVibrateFallback: true,
@@ -11,7 +15,14 @@ const hapticOptions = {
 };
 
 export const triggerHaptic = (type: 'impactLight' | 'impactMedium' | 'impactHeavy' | 'notificationSuccess' | 'notificationWarning' | 'notificationError' = 'impactLight') => {
-  ReactNativeHapticFeedback.trigger(type, hapticOptions);
+  try {
+    // Check if the native module exists before calling
+    if (ReactNativeHapticFeedback && typeof ReactNativeHapticFeedback.trigger === 'function') {
+      ReactNativeHapticFeedback.trigger(type, hapticOptions);
+    }
+  } catch (error) {
+    console.warn('Haptic feedback not available', error);
+  }
 };
 
 // Sound Cache
@@ -20,27 +31,33 @@ const sounds: { [key: string]: Sound } = {};
 const loadSound = (name: string) => {
   if (sounds[name]) return sounds[name];
   
-  // Note: Sounds must be in android/app/src/main/res/raw/name.mp3
-  // and for iOS in the project bundle
-  const s = new Sound(name, Sound.MAIN_BUNDLE, (error) => {
-    if (error) {
-      console.warn(`Failed to load sound ${name}`, error);
-      return;
-    }
-  });
-  sounds[name] = s;
-  return s;
+  try {
+    const s = new Sound(name, Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.warn(`Failed to load sound ${name}`, error);
+      }
+    });
+    sounds[name] = s;
+    return s;
+  } catch (e) {
+    console.warn(`Sound module not linked for ${name}`);
+    return null;
+  }
 };
 
 export const playSound = (name: string, volume: number = 1.0) => {
-  const s = loadSound(name);
-  if (s) {
-    s.setVolume(volume);
-    s.play((success) => {
-      if (!success) {
-        console.warn('Sound playback failed');
-      }
-    });
+  try {
+    const s = loadSound(name);
+    if (s && typeof s.play === 'function') {
+      s.setVolume(volume);
+      s.play((success) => {
+        if (!success) {
+          console.warn('Sound playback failed');
+        }
+      });
+    }
+  } catch (error) {
+    console.warn('Sound playback not available', error);
   }
 };
 

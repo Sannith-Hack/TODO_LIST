@@ -48,8 +48,10 @@ ADDED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml:1:
 INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml:1:1-27:12
 INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml:1:1-27:12
 INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml:1:1-27:12
+MERGED from [:react-native-sound] D:\User\Desktop\TODO_LIST\node_modules\react-native-sound\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-15:12
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-9:12
 MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:2:1-12:12
 MERGED from [androidx.work:work-runtime:2.8.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\01ab4a40946cafc93ea9b5ac1434f461\transformed\work-runtime-2.8.0\AndroidManifest.xml:17:1-145:12
@@ -149,10 +151,14 @@ uses-sdk
 INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml
 INJECTED from D:\User\Desktop\TODO_LIST\android\app\src\main\AndroidManifest.xml
+MERGED from [:react-native-sound] D:\User\Desktop\TODO_LIST\node_modules\react-native-sound\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-sound] D:\User\Desktop\TODO_LIST\node_modules\react-native-sound\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:10:5-44
@@ -281,6 +287,12 @@ ADDED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notif
 		ADDED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:12:13-37
 	android:name
 		ADDED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@notifee\react-native\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:9:13-68
+uses-permission#android.permission.VIBRATE
+ADDED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:5-66
+MERGED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:13:5-66
+MERGED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:13:5-66
+	android:name
+		ADDED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:22-63
 uses-permission#android.permission.WAKE_LOCK
 ADDED from [androidx.work:work-runtime:2.8.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\01ab4a40946cafc93ea9b5ac1434f461\transformed\work-runtime-2.8.0\AndroidManifest.xml:23:5-68
 MERGED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:10:5-68
@@ -575,10 +587,6 @@ uses-permission#android.permission.POST_NOTIFICATIONS
 ADDED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:9:5-77
 	android:name
 		ADDED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:9:22-74
-uses-permission#android.permission.VIBRATE
-ADDED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:13:5-66
-	android:name
-		ADDED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:13:22-63
 uses-permission#android.permission.SCHEDULE_EXACT_ALARM
 ADDED from [app.notifee:core:202108261754] C:\Users\Admin\.gradle\caches\8.10.2\transforms\922848d07596212850bc4eaf0f81fa88\transformed\core-202108261754\AndroidManifest.xml:16:5-79
 	android:name

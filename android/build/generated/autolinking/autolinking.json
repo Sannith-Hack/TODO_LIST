@@ -52,6 +52,56 @@
         }
       }
     },
+    "react-native-haptic-feedback": {
+      "root": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-haptic-feedback",
+      "name": "react-native-haptic-feedback",
+      "platforms": {
+        "ios": {
+          "podspecPath": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-haptic-feedback\\RNReactNativeHapticFeedback.podspec",
+          "version": "3.0.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-haptic-feedback\\android",
+          "packageImportPath": "import com.mkuczera.haptic.RNReactNativeHapticFeedbackPackage;",
+          "packageInstance": "new RNReactNativeHapticFeedbackPackage()",
+          "buildTypes": [],
+          "libraryName": "RNHapticFeedbackSpec",
+          "componentDescriptors": [],
+          "cmakeListsPath": "D:/User/Desktop/TODO_LIST/node_modules/react-native-haptic-feedback/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "react-native-sound": {
+      "root": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-sound",
+      "name": "react-native-sound",
+      "platforms": {
+        "ios": {
+          "podspecPath": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-sound\\RNSound.podspec",
+          "version": "0.13.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-sound\\android",
+          "packageImportPath": "import com.zmxv.RNSound.SoundPackage;",
+          "packageInstance": "new SoundPackage()",
+          "buildTypes": [],
+          "libraryName": "RNSoundSpec",
+          "componentDescriptors": [],
+          "cmakeListsPath": "D:/User/Desktop/TODO_LIST/node_modules/react-native-sound/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "react-native-svg": {
       "root": "D:\\User\\Desktop\\TODO_LIST\\node_modules\\react-native-svg",
       "name": "react-native-svg",

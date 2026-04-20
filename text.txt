@@ -123,26 +123,10 @@
 
 
   npx react-native run-android --mode=release --no-packager
-✦ I've finished the implementation and will now guide the user on adding the sound files.
+  2. Glitch/Particle Animations: ⚠️ PARTIALLY IMPLEMENTED
+   * Glitch Effect: The Sidebar already has a "Glitch Effect" (as noted in your GEMINI.md), but the "dissolving into blue particles" for quest deletion has not been implemented yet.
+   * Requirement: This would require installing react-native-reanimated and react-native-skia (or a similar particle engine) to achieve that high-end visual effect.
 
-  I have implemented the Haptic & Sound Feedback system across the entire application to enhance the "System" immersion.
-
-  🛠️ What's New:
-   1. Feedback Utility (src/utils/feedback.ts): Created a centralized manager for haptics and sounds using react-native-haptic-feedback and
-      react-native-sound.
-   2. Quest Log & Leveling:
-       * Completing a quest now triggers Haptic Success and plays a Quest Complete sound.
-       * Leveling Up logic is now fully functional in HomeScreen.tsx. When you gain enough XP, a Level Up sound plays, a heavy haptic
-         vibration occurs, and the LevelUpModal is displayed.
-       * UI interactions (adding quests, deleting, selecting categories) now have subtle haptic "clicks."
-   3. Memo Pad: Toggling memos or adding new ones now provides tactile haptic feedback.
-   4. Status Window (Skill Tree): Spending stat points to manually level up skills now triggers haptics and sound feedback.
-   5. Settings: Toggling notifications and changing intervals now provide haptic feedback.
-
-  ⚠️ Final Step Required:
-  To hear the sounds, you must add your .mp3 files to the native project folders:
-   * Android: Place quest_complete.mp3, level_up.mp3, and button_click.mp3 in android/app/src/main/res/raw/.
-   * iOS: Add the same files to your project bundle in Xcode.
-
-  Note: Since these are native modules, you will need to rebuild the app using npx react-native run-android or npx react-native run-ios for
-  the changes to take effect.
+  3. Rank-Based UI Evolution: ❌ NOT YET IMPLEMENTED
+   * Currently, the app calculates your Rank (E, D, C, B, A, S) in the background, but the UI theme (colors/glows) remains the same blue regardless of your Rank.
+   * Recommendation: We can update the theme.ts and the TaskItem component so that if you reach S-Rank, the glow changes from Neon Blue to Gold/Purple.
