@@ -1,11 +1,15 @@
 import React, { useState, useEffect, memo } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform, LayoutAnimation, UIManager } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats } from '../utils/types';
 import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings, addToHistory } from '../storage/taskStorage';
 import { QUEST_TEMPLATES } from '../utils/templates';
 import { updateSystemNotifications } from '../utils/notifications';
 import TaskItem from '../components/TaskItem';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Memoized Creation Panel to prevent keyboard focus loss
 const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, deadlineDays, setDeadlineDays, taskInput, setTaskInput, targetCount, setTargetCount }: any) => (
@@ -159,6 +163,7 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         currentCount: selectedSkill === 'Workout' ? 0 : undefined,
         targetCount: selectedSkill === 'Workout' ? parseInt(targetCount) || 0 : undefined
     };
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setTasks(prev => [newTask, ...prev]);
     setTaskInput(''); setTargetCount(''); setScheduledDays(0); setDeadlineDays(0);
   };
@@ -166,14 +171,21 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const getSections = () => {
     const now = new Date().setHours(0,0,0,0);
     const visible = tasks.filter(t => !t.dueDate || t.dueDate <= now);
+    
+    const sortTasks = (data: Task[]) => [...data].sort((a, b) => {
+      if (a.completed === b.completed) return 0;
+      return a.completed ? 1 : -1;
+    });
+
     return [
-        { title: 'DAILY', data: visible.filter(t => t.category === 'Regular') },
-        { title: 'ONE-TIME', data: visible.filter(t => t.category === 'OneTime') },
-        { title: 'LONG-TERM', data: visible.filter(t => t.category === 'LongTerm') }
+        { title: 'DAILY', data: sortTasks(visible.filter(t => t.category === 'Regular')) },
+        { title: 'ONE-TIME', data: sortTasks(visible.filter(t => t.category === 'OneTime')) },
+        { title: 'LONG-TERM', data: sortTasks(visible.filter(t => t.category === 'LongTerm')) }
     ].filter(s => s.data.length > 0);
   };
 
   const toggleTask = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setTasks(prev => prev.map(t => {
       if (t.id === id) {
         const completed = !t.completed;
@@ -185,18 +197,24 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   };
 
   const updateTaskCount = (id: string, c: number) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id === id) {
-        const updatedTask = { ...t, currentCount: c };
-        if (t.targetCount && c >= t.targetCount && !t.completed) {
-          updatedTask.completed = true;
-          updatedTask.completedAt = Date.now();
-          addToHistory(updatedTask);
-        }
-        return updatedTask;
+    setTasks(prev => {
+      const taskIndex = prev.findIndex(t => t.id === id);
+      if (taskIndex === -1) return prev;
+      
+      const task = prev[taskIndex];
+      const updatedTask = { ...task, currentCount: c };
+      
+      if (task.targetCount && c >= task.targetCount && !task.completed) {
+        updatedTask.completed = true;
+        updatedTask.completedAt = Date.now();
+        addToHistory(updatedTask);
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       }
-      return t;
-    }));
+      
+      const newTasks = [...prev];
+      newTasks[taskIndex] = updatedTask;
+      return newTasks;
+    });
   };
 
   return (
@@ -212,7 +230,10 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
             renderItem={({ item }) => <TaskItem 
               item={item} 
               onToggle={toggleTask} 
-              onDelete={(id) => setTasks(prev => prev.filter(t => t.id !== id))} 
+              onDelete={(id) => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setTasks(prev => prev.filter(t => t.id !== id));
+              }} 
               onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} 
               onUpdateCount={updateTaskCount} 
             />}

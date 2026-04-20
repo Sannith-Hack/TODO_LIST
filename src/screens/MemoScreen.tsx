@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Keyboard, LayoutAnimation, UIManager } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, SHADOWS } from '../utils/theme';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface Memo {
   id: string;
@@ -25,6 +29,7 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   };
 
   const saveMemos = async (newMemos: Memo[]) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     await AsyncStorage.setItem(MEMOS_KEY, JSON.stringify(newMemos));
     setMemos(newMemos);
   };
@@ -32,7 +37,7 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const addMemo = () => {
     if (input.trim() === '') return;
     const newMemo = { id: Date.now().toString(), text: input.trim(), completed: false };
-    saveMemos([...memos, newMemo]);
+    saveMemos([newMemo, ...memos]);
     setInput('');
     Keyboard.dismiss();
   };
@@ -44,6 +49,11 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const deleteMemo = (id: string) => {
     saveMemos(memos.filter(m => m.id !== id));
   };
+
+  const sortedMemos = [...memos].sort((a, b) => {
+    if (a.completed === b.completed) return 0;
+    return a.completed ? 1 : -1;
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,7 +68,7 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
       </View>
 
       <FlatList
-        data={memos}
+        data={sortedMemos}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.memoItem}>
