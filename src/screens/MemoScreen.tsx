@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Keyboard, LayoutAnimation, UIManager } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS, SHADOWS } from '../utils/theme';
+import { COLORS, getColors, SHADOWS } from '../utils/theme';
 import { triggerHaptic } from '../utils/feedback';
+import { UserStats } from '../utils/types';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -17,11 +18,14 @@ interface Memo {
 
 const MEMOS_KEY = '@memo_pad_data';
 
-const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
+const MemoScreen = ({ onOpenMenu, stats }: { onOpenMenu: () => void, stats: UserStats | null }) => {
   const [memos, setMemos] = useState<Memo[]>([]);
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isArchiveVisible, setIsArchiveVisible] = useState(false);
+
+  const theme = stats?.theme || 'dark';
+  const colors = getColors(theme);
 
   useEffect(() => {
     loadMemos();
@@ -80,30 +84,30 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={onOpenMenu}>
-          <View style={styles.menuLine} />
-          <View style={[styles.menuLine, { width: 15 }]} />
-          <View style={styles.menuLine} />
+          <View style={[styles.menuLine, { backgroundColor: colors.primary }]} />
+          <View style={[styles.menuLine, { width: 15, backgroundColor: colors.primary }]} />
+          <View style={[styles.menuLine, { backgroundColor: colors.primary }]} />
         </TouchableOpacity>
-        <Text style={styles.title}>MEMO PAD</Text>
+        <Text style={[styles.title, { color: colors.primary }]}>MEMO PAD</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={styles.searchRow}>
+      <View style={[styles.searchRow, { borderBottomColor: colors.border }]}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { backgroundColor: colors.surface, color: colors.text }]}
           placeholder="SEARCH MEMOS..."
-          placeholderTextColor={COLORS.textDim}
+          placeholderTextColor={colors.textDim}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
         <TouchableOpacity 
-          style={[styles.archiveToggle, isArchiveVisible && styles.archiveToggleActive]} 
+          style={[styles.archiveToggle, { borderColor: colors.border }, isArchiveVisible && { borderColor: colors.accent, backgroundColor: colors.accent + '22' }]} 
           onPress={() => setIsArchiveVisible(!isArchiveVisible)}
         >
-          <Text style={[styles.archiveToggleText, isArchiveVisible && styles.archiveToggleTextActive]}>ARCHIVE</Text>
+          <Text style={[styles.archiveToggleText, { color: colors.textDim }, isArchiveVisible && { color: colors.accent }]}>ARCHIVE</Text>
         </TouchableOpacity>
       </View>
 
@@ -111,23 +115,23 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
         data={sortedMemos}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View style={styles.memoItem}>
-            <TouchableOpacity onPress={() => toggleMemo(item.id)} style={styles.checkbox}>
-              {item.completed && <View style={styles.checked} />}
+          <View style={[styles.memoItem, { borderBottomColor: colors.border }]}>
+            <TouchableOpacity onPress={() => toggleMemo(item.id)} style={[styles.checkbox, { borderColor: colors.primary }]}>
+              {item.completed && <View style={[styles.checked, { backgroundColor: colors.primary }]} />}
             </TouchableOpacity>
-            <Text style={[styles.memoText, item.completed && styles.memoCompleted]}>{item.text}</Text>
+            <Text style={[styles.memoText, { color: colors.text }, item.completed && { color: colors.textDim, textDecorationLine: 'line-through' }]}>{item.text}</Text>
             <View style={styles.memoActions}>
               {item.isArchived ? (
                 <TouchableOpacity onPress={() => unarchiveMemo(item.id)} style={{marginRight: 15}}>
-                  <Text style={styles.unarchiveText}>UN-ARC</Text>
+                  <Text style={[styles.unarchiveText, { color: colors.success }]}>UN-ARC</Text>
                 </TouchableOpacity>
               ) : item.completed && (
                 <TouchableOpacity onPress={() => archiveMemo(item.id)} style={{marginRight: 15}}>
-                  <Text style={styles.archiveText}>ARC</Text>
+                  <Text style={[styles.archiveText, { color: colors.accent }]}>ARC</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={() => deleteMemo(item.id)}>
-                <Text style={styles.deleteText}>DEL</Text>
+                <Text style={[styles.deleteText, { color: colors.danger }]}>DEL</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -136,16 +140,16 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
 
       {!isArchiveVisible && (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.inputRow}>
+          <View style={[styles.inputRow, { backgroundColor: colors.surface }]}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="[+] QUICK MEMO"
-              placeholderTextColor={COLORS.textDim}
+              placeholderTextColor={colors.textDim}
               value={input}
               onChangeText={setInput}
             />
-            <TouchableOpacity style={styles.addBtn} onPress={addMemo}>
-              <Text style={styles.addBtnText}>ADD</Text>
+            <TouchableOpacity style={[styles.addBtn, { backgroundColor: colors.primary }]} onPress={addMemo}>
+              <Text style={[styles.addBtnText, { color: colors.background }]}>ADD</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>

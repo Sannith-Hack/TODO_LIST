@@ -10,7 +10,7 @@ import {
   SafeAreaView,
   ScrollView
 } from 'react-native';
-import { COLORS, SHADOWS, getRankTheme } from '../utils/theme';
+import { COLORS, LIGHT_COLORS, SHADOWS, getRankTheme } from '../utils/theme';
 import { UserStats } from '../utils/types';
 
 interface SidebarProps {

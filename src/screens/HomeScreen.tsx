@@ -15,98 +15,101 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 // Memoized Creation Panel to prevent keyboard focus loss
-const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, deadlineDays, setDeadlineDays, taskInput, setTaskInput, targetCount, setTargetCount, primaryColor, frequency, setFrequency, searchQuery, setSearchQuery, isArchiveVisible, setIsArchiveVisible, recurringDays, setRecurringDays }: any) => (
-    <View style={styles.creationPanel}>
-        <View style={styles.searchRow}>
-          <TextInput 
-            style={styles.searchInput} 
-            placeholder="SEARCH QUESTS..." 
-            placeholderTextColor={COLORS.textDim} 
-            value={searchQuery} 
-            onChangeText={setSearchQuery} 
-          />
-          <TouchableOpacity 
-            style={[styles.archiveToggle, isArchiveVisible && { borderColor: COLORS.accent, backgroundColor: COLORS.accent + '22' }]} 
-            onPress={() => setIsArchiveVisible(!isArchiveVisible)}
-          >
-            <Text style={[styles.archiveToggleText, isArchiveVisible && { color: COLORS.accent }]}>ARCHIVE</Text>
-          </TouchableOpacity>
-        </View>
+const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelectedSkill, selectedCategory, setSelectedCategory, scheduledDays, setScheduledDays, deadlineDays, setDeadlineDays, taskInput, setTaskInput, targetCount, setTargetCount, primaryColor, frequency, setFrequency, searchQuery, setSearchQuery, isArchiveVisible, setIsArchiveVisible, recurringDays, setRecurringDays, theme }: any) => {
+    const colors = getColors(theme);
+    return (
+        <View style={styles.creationPanel}>
+            <View style={styles.searchRow}>
+            <TextInput 
+                style={[styles.searchInput, { backgroundColor: colors.surface, color: colors.text, borderBottomColor: colors.border }]} 
+                placeholder="SEARCH QUESTS..." 
+                placeholderTextColor={colors.textDim} 
+                value={searchQuery} 
+                onChangeText={setSearchQuery} 
+            />
+            <TouchableOpacity 
+                style={[styles.archiveToggle, { borderColor: colors.border }, isArchiveVisible && { borderColor: colors.accent, backgroundColor: colors.accent + '22' }]} 
+                onPress={() => setIsArchiveVisible(!isArchiveVisible)}
+            >
+                <Text style={[styles.archiveToggleText, { color: colors.textDim }, isArchiveVisible && { color: colors.accent }]}>ARCHIVE</Text>
+            </TouchableOpacity>
+            </View>
 
-        <View style={styles.creationHeader}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {(['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'] as SkillType[]).map(s => (
-                    <TouchableOpacity key={s} onPress={() => setSelectedSkill(s)} style={[styles.selectorItem, selectedSkill === s && { borderColor: SKILL_COLORS[s], backgroundColor: SKILL_COLORS[s] + '22' }]}>
-                        <Text style={[styles.selectorText, selectedSkill === s && { color: SKILL_COLORS[s] }]}>{s}</Text>
+            <View style={styles.creationHeader}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {(['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'] as SkillType[]).map(s => (
+                        <TouchableOpacity key={s} onPress={() => setSelectedSkill(s)} style={[styles.selectorItem, { backgroundColor: colors.surface, borderColor: colors.border }, selectedSkill === s && { borderColor: SKILL_COLORS[s], backgroundColor: SKILL_COLORS[s] + '22' }]}>
+                            <Text style={[styles.selectorText, { color: colors.textDim }, selectedSkill === s && { color: SKILL_COLORS[s] }]}>{s}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+                <TouchableOpacity style={[styles.templateToggle, { borderColor: primaryColor, backgroundColor: primaryColor + '11' }]} onPress={onShowTemplates}><Text style={[styles.templateToggleText, { color: primaryColor }]}>PRESETS</Text></TouchableOpacity>
+            </View>
+            <View style={styles.categorySelectorContainer}>
+                {(['Regular', 'OneTime', 'LongTerm'] as TaskCategory[]).map(cat => (
+                    <TouchableOpacity key={cat} onPress={() => setSelectedCategory(cat)} style={[styles.categoryItem, { borderColor: colors.border }, selectedCategory === cat && { borderColor: CATEGORY_COLORS[cat], backgroundColor: CATEGORY_COLORS[cat] + '22' }]}>
+                        <Text style={[styles.categoryText, { color: colors.textDim }, selectedCategory === cat && { color: CATEGORY_COLORS[cat] }]}>{cat.toUpperCase()}</Text>
                     </TouchableOpacity>
                 ))}
-            </ScrollView>
-            <TouchableOpacity style={[styles.templateToggle, { borderColor: primaryColor, backgroundColor: primaryColor + '11' }]} onPress={onShowTemplates}><Text style={[styles.templateToggleText, { color: primaryColor }]}>PRESETS</Text></TouchableOpacity>
-        </View>
-        <View style={styles.categorySelectorContainer}>
-            {(['Regular', 'OneTime', 'LongTerm'] as TaskCategory[]).map(cat => (
-                <TouchableOpacity key={cat} onPress={() => setSelectedCategory(cat)} style={[styles.categoryItem, selectedCategory === cat && { borderColor: CATEGORY_COLORS[cat], backgroundColor: CATEGORY_COLORS[cat] + '22' }]}>
-                    <Text style={[styles.categoryText, selectedCategory === cat && { color: CATEGORY_COLORS[cat] }]}>{cat.toUpperCase()}</Text>
-                </TouchableOpacity>
-            ))}
-        </View>
-
-        {selectedCategory === 'Regular' && (
-          <View style={styles.scheduleContainer}>
-            <Text style={[styles.scheduleLabel, { color: primaryColor }]}>TYPE:</Text>
-            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-              {(['Daily', 'Weekly', 'Custom'] as TaskFrequency[]).map(f => (
-                  <TouchableOpacity key={f} onPress={() => setFrequency(f)} style={[styles.offsetItem, frequency === f && { borderColor: primaryColor, backgroundColor: primaryColor + '22' }]}>
-                      <Text style={[styles.offsetText, frequency === f && { color: primaryColor, fontWeight: 'bold' }]}>{f.toUpperCase()}</Text>
-                  </TouchableOpacity>
-              ))}
-              {frequency === 'Custom' && (
-                <TextInput 
-                  style={[styles.smallInput, { borderColor: primaryColor }]} 
-                  placeholder="DAYS" 
-                  placeholderTextColor={COLORS.textDim} 
-                  value={recurringDays} 
-                  onChangeText={setRecurringDays} 
-                  keyboardType="numeric" 
-                />
-              )}
             </View>
-          </View>
-        )}
 
-        {selectedCategory !== 'Regular' && (
-          <View style={styles.scheduleContainer}>
-            <Text style={[styles.scheduleLabel, { color: primaryColor }]}>START:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {[0, 1, 2, 3, 4, 5, 6, 7].map(offset => (
-                <TouchableOpacity key={offset} onPress={() => setScheduledDays(offset)} style={[styles.offsetItem, scheduledDays === offset && { borderColor: primaryColor, backgroundColor: primaryColor + '22' }]}>
-                    <Text style={[styles.offsetText, scheduledDays === offset && { color: primaryColor, fontWeight: 'bold' }]}>{offset === 0 ? 'TODAY' : `+${offset}D`}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-        {selectedCategory === 'LongTerm' && (
-          <View style={styles.scheduleContainer}>
-            <Text style={[styles.scheduleLabel, { color: primaryColor }]}>LIMIT:</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {[0, 3, 7, 14, 30].map(offset => (
-                <TouchableOpacity key={offset} onPress={() => setDeadlineDays(offset)} style={[styles.offsetItem, deadlineDays === offset && { borderColor: COLORS.danger, backgroundColor: COLORS.danger + '22' }]}>
-                    <Text style={[styles.offsetText, deadlineDays === offset && { color: COLORS.danger, fontWeight: 'bold' }]}>{offset === 0 ? 'UNLIMITED' : `${offset} DAYS`}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-        <View style={styles.inputRow}>
-            <TextInput style={styles.input} placeholder="[+] QUEST NAME" placeholderTextColor={COLORS.textDim} value={taskInput} onChangeText={setTaskInput} />
-            <TouchableOpacity style={[styles.addButton, { backgroundColor: primaryColor }]} onPress={onAdd}><Text style={styles.addButtonText}>ADD</Text></TouchableOpacity>
+            {selectedCategory === 'Regular' && (
+            <View style={styles.scheduleContainer}>
+                <Text style={[styles.scheduleLabel, { color: primaryColor }]}>TYPE:</Text>
+                <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                {(['Daily', 'Weekly', 'Custom'] as TaskFrequency[]).map(f => (
+                    <TouchableOpacity key={f} onPress={() => setFrequency(f)} style={[styles.offsetItem, { borderColor: colors.border }, frequency === f && { borderColor: primaryColor, backgroundColor: primaryColor + '22' }]}>
+                        <Text style={[styles.offsetText, { color: colors.textDim }, frequency === f && { color: primaryColor, fontWeight: 'bold' }]}>{f.toUpperCase()}</Text>
+                    </TouchableOpacity>
+                ))}
+                {frequency === 'Custom' && (
+                    <TextInput 
+                    style={[styles.smallInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }, frequency === 'Custom' && { borderColor: primaryColor }]} 
+                    placeholder="DAYS" 
+                    placeholderTextColor={colors.textDim} 
+                    value={recurringDays} 
+                    onChangeText={setRecurringDays} 
+                    keyboardType="numeric" 
+                    />
+                )}
+                </View>
+            </View>
+            )}
+
+            {selectedCategory !== 'Regular' && (
+            <View style={styles.scheduleContainer}>
+                <Text style={[styles.scheduleLabel, { color: primaryColor }]}>START:</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {[0, 1, 2, 3, 4, 5, 6, 7].map(offset => (
+                    <TouchableOpacity key={offset} onPress={() => setScheduledDays(offset)} style={[styles.offsetItem, { borderColor: colors.border }, scheduledDays === offset && { borderColor: primaryColor, backgroundColor: primaryColor + '22' }]}>
+                        <Text style={[styles.offsetText, { color: colors.textDim }, scheduledDays === offset && { color: primaryColor, fontWeight: 'bold' }]}>{offset === 0 ? 'TODAY' : `+${offset}D`}</Text>
+                    </TouchableOpacity>
+                ))}
+                </ScrollView>
+            </View>
+            )}
+            {selectedCategory === 'LongTerm' && (
+            <View style={styles.scheduleContainer}>
+                <Text style={[styles.scheduleLabel, { color: primaryColor }]}>LIMIT:</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {[0, 3, 7, 14, 30].map(offset => (
+                    <TouchableOpacity key={offset} onPress={() => setDeadlineDays(offset)} style={[styles.offsetItem, { borderColor: colors.border }, deadlineDays === offset && { borderColor: colors.danger, backgroundColor: colors.danger + '22' }]}>
+                        <Text style={[styles.offsetText, { color: colors.textDim }, deadlineDays === offset && { color: colors.danger, fontWeight: 'bold' }]}>{offset === 0 ? 'UNLIMITED' : `${offset} DAYS`}</Text>
+                    </TouchableOpacity>
+                ))}
+                </ScrollView>
+            </View>
+            )}
+            <View style={styles.inputRow}>
+                <TextInput style={[styles.input, { backgroundColor: colors.surface, color: colors.text }]} placeholder="[+] QUEST NAME" placeholderTextColor={colors.textDim} value={taskInput} onChangeText={setTaskInput} />
+                <TouchableOpacity style={[styles.addButton, { backgroundColor: primaryColor }]} onPress={onAdd}><Text style={[styles.addButtonText, { color: colors.background }]}>ADD</Text></TouchableOpacity>
+            </View>
+            {selectedSkill === 'Workout' && (
+                <TextInput style={[styles.input, {marginTop: 10, backgroundColor: colors.surface, color: colors.text}]} placeholder="[+] REPS (e.g. 50)" placeholderTextColor={colors.textDim} value={targetCount} onChangeText={setTargetCount} keyboardType="numeric" />
+            )}
         </View>
-        {selectedSkill === 'Workout' && (
-            <TextInput style={[styles.input, {marginTop: 10}]} placeholder="[+] REPS (e.g. 50)" placeholderTextColor={COLORS.textDim} value={targetCount} onChangeText={setTargetCount} keyboardType="numeric" />
-        )}
-    </View>
-));
+    );
+});
 
 const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => void, stats: UserStats | null, refreshStats: () => void }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -126,6 +129,8 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
   const [searchQuery, setSearchQuery] = useState('');
   const [isArchiveVisible, setIsArchiveVisible] = useState(false);
 
+  const theme = stats?.theme || 'dark';
+  const colors = getColors(theme);
   const rankTheme = getRankTheme(userRank);
   const primaryColor = rankTheme.primary;
 

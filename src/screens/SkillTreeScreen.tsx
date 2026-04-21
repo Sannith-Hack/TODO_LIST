@@ -69,12 +69,20 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
       return;
     }
 
+    const currentAttributes = stats.attributes || {
+      strength: 10,
+      agility: 10,
+      intelligence: 10,
+      sense: 10,
+      vitality: 10,
+    };
+
     const newStats: UserStats = {
       ...stats,
       statPoints: stats.statPoints - 1,
       attributes: {
-        ...stats.attributes,
-        [attr]: stats.attributes[attr] + 1
+        ...currentAttributes,
+        [attr]: currentAttributes[attr] + 1
       }
     };
 

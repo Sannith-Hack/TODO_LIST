@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
+import { COLORS, getColors, SHADOWS, SKILL_COLORS, CATEGORY_COLORS } from '../utils/theme';
 import { Task, SubTask } from '../utils/types';
 
 interface TaskItemProps {
@@ -13,13 +13,16 @@ interface TaskItemProps {
   onAddSubTask?: (taskId: string, text: string) => void;
   onArchive?: (id: string) => void;
   onUnarchive?: (id: string) => void;
+  theme?: 'dark' | 'light';
 }
 
-const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleSubTask, onAddSubTask, onArchive, onUnarchive }: TaskItemProps) => {
+const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleSubTask, onAddSubTask, onArchive, onUnarchive, theme = 'dark' }: TaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
   const [newSubTask, setNewSubTask] = useState('');
   const [showSubTasks, setShowSubTasks] = useState(false);
+
+  const colors = getColors(theme);
 
   const handleUpdate = () => {
     if (editText.trim().length > 0) {
@@ -54,14 +57,15 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
   };
 
   const isWorkout = (item.skillType === 'Workout' || item.isPenalty) && item.currentCount !== undefined;
-  const itemColor = item.isPenalty ? COLORS.danger : SKILL_COLORS[item.skillType];
+  const itemColor = item.isPenalty ? colors.danger : SKILL_COLORS[item.skillType];
 
   return (
     <View style={[
       styles.taskItem, 
+      { backgroundColor: colors.surface, borderColor: colors.border },
       item.completed && styles.taskItemCompleted,
       { borderLeftColor: itemColor },
-      item.isPenalty && { borderColor: COLORS.danger, borderWidth: 1 }
+      item.isPenalty && { borderColor: colors.danger, borderWidth: 1 }
     ]}>
       {!isEditing && (
         <TouchableOpacity 
@@ -80,10 +84,10 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
         <View style={styles.headerRow}>
           <View style={[
             styles.badge, 
-            { backgroundColor: item.isPenalty ? COLORS.danger + '33' : CATEGORY_COLORS[item.category] + '33', 
-              borderColor: item.isPenalty ? COLORS.danger : CATEGORY_COLORS[item.category] }
+            { backgroundColor: item.isPenalty ? colors.danger + '33' : CATEGORY_COLORS[item.category] + '33', 
+              borderColor: item.isPenalty ? colors.danger : CATEGORY_COLORS[item.category] }
           ]}>
-            <Text style={[styles.badgeText, { color: item.isPenalty ? COLORS.danger : CATEGORY_COLORS[item.category] }]}>
+            <Text style={[styles.badgeText, { color: item.isPenalty ? colors.danger : CATEGORY_COLORS[item.category] }]}>
               {item.isPenalty ? 'PENALTY' : item.category.toUpperCase()}
             </Text>
           </View>
@@ -91,7 +95,7 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
             {item.isPenalty ? 'SYSTEM' : item.skillType}
           </Text>
           {item.deadline && !item.completed && (
-            <Text style={styles.deadlineText}>
+            <Text style={[styles.deadlineText, { color: colors.danger }]}>
               LIMIT: {new Date(item.deadline).toLocaleDateString()}
             </Text>
           )}
@@ -99,7 +103,7 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
 
         {isEditing ? (
           <TextInput
-            style={styles.editInput}
+            style={[styles.editInput, { color: colors.primary }]}
             value={editText}
             onChangeText={setEditText}
             autoFocus
@@ -110,8 +114,9 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
           <Text 
             style={[
               styles.taskText, 
-              item.completed && styles.taskTextCompleted,
-              item.isPenalty && { color: COLORS.danger, fontWeight: 'bold' }
+              { color: colors.text },
+              item.completed && { color: colors.textDim, textDecorationLine: 'line-through' },
+              item.isPenalty && { color: colors.danger, fontWeight: 'bold' }
             ]}
             onPress={() => onToggle(item.id)}
           >
@@ -121,28 +126,28 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
 
         {isWorkout && !isEditing && (
           <View style={styles.workoutControls}>
-            <View style={[styles.counterContainer, item.isPenalty && { borderColor: COLORS.danger }]}>
-              <TouchableOpacity onPress={handleDecrement} style={[styles.counterBtn, item.isPenalty && { backgroundColor: COLORS.danger }]}>
-                <Text style={[styles.counterBtnText, item.isPenalty && { color: COLORS.white }]}>-</Text>
+            <View style={[styles.counterContainer, { backgroundColor: colors.background, borderColor: colors.border }, item.isPenalty && { borderColor: colors.danger }]}>
+              <TouchableOpacity onPress={handleDecrement} style={[styles.counterBtn, { backgroundColor: colors.secondary }, item.isPenalty && { backgroundColor: colors.danger }]}>
+                <Text style={[styles.counterBtnText, { color: colors.primary }, item.isPenalty && { color: colors.white }]}>-</Text>
               </TouchableOpacity>
-              <Text style={[styles.counterText, item.isPenalty && { color: COLORS.danger }]}>
+              <Text style={[styles.counterText, { color: colors.text }, item.isPenalty && { color: colors.danger }]}>
                 {item.currentCount} / {item.targetCount} REPS
               </Text>
-              <TouchableOpacity onPress={() => handleIncrement(1)} style={[styles.counterBtn, item.isPenalty && { backgroundColor: COLORS.danger }]}>
-                <Text style={[styles.counterBtnText, item.isPenalty && { color: COLORS.white }]}>+</Text>
+              <TouchableOpacity onPress={() => handleIncrement(1)} style={[styles.counterBtn, { backgroundColor: colors.secondary }, item.isPenalty && { backgroundColor: colors.danger }]}>
+                <Text style={[styles.counterBtnText, { color: colors.primary }, item.isPenalty && { color: colors.white }]}>+</Text>
               </TouchableOpacity>
             </View>
             
             <View style={styles.quickAddRow}>
               <TouchableOpacity 
                 onPress={() => handleIncrement(10)} 
-                style={[styles.quickAddBtn, { borderColor: itemColor }]}
+                style={[styles.quickAddBtn, { backgroundColor: colors.surface, borderColor: itemColor }]}
               >
                 <Text style={[styles.quickAddText, { color: itemColor }]}>+10</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => handleIncrement(25)} 
-                style={[styles.quickAddBtn, { borderColor: itemColor }]}
+                style={[styles.quickAddBtn, { backgroundColor: colors.surface, borderColor: itemColor }]}
               >
                 <Text style={[styles.quickAddText, { color: itemColor }]}>+25</Text>
               </TouchableOpacity>
@@ -151,9 +156,9 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
         )}
 
         {item.category === 'LongTerm' && !isEditing && (
-          <View style={styles.subTaskSection}>
+          <View style={[styles.subTaskSection, { borderTopColor: colors.border }]}>
             <TouchableOpacity onPress={() => setShowSubTasks(!showSubTasks)} style={styles.subTaskToggle}>
-              <Text style={styles.subTaskToggleText}>
+              <Text style={[styles.subTaskToggleText, { color: colors.primary }]}>
                 {showSubTasks ? '[-] HIDE SUB-QUESTS' : `[+] SUB-QUESTS (${item.subTasks?.length || 0})`}
               </Text>
             </TouchableOpacity>
@@ -162,15 +167,15 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
               <View style={styles.subTaskList}>
                 {item.subTasks?.map(st => (
                   <TouchableOpacity key={st.id} style={styles.subTaskItem} onPress={() => onToggleSubTask?.(item.id, st.id)}>
-                    <View style={[styles.subCheckbox, st.completed && { backgroundColor: itemColor }]} />
-                    <Text style={[styles.subTaskText, st.completed && styles.subTaskTextCompleted]}>{st.text}</Text>
+                    <View style={[styles.subCheckbox, { borderColor: colors.textDim }, st.completed && { backgroundColor: itemColor }]} />
+                    <Text style={[styles.subTaskText, { color: colors.text }, st.completed && { color: colors.textDim, textDecorationLine: 'line-through' }]}>{st.text}</Text>
                   </TouchableOpacity>
                 ))}
                 <View style={styles.addSubTaskRow}>
                   <TextInput
-                    style={styles.subTaskInput}
+                    style={[styles.subTaskInput, { color: colors.text, backgroundColor: colors.background }]}
                     placeholder="NEW SUB-QUEST..."
-                    placeholderTextColor={COLORS.textDim}
+                    placeholderTextColor={colors.textDim}
                     value={newSubTask}
                     onChangeText={setNewSubTask}
                   />
@@ -187,17 +192,17 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
       <View style={styles.actionButtons}>
         {isEditing ? (
           <TouchableOpacity onPress={handleUpdate} style={styles.actionButton}>
-            <Text style={styles.saveButtonText}>UPDATE</Text>
+            <Text style={[styles.saveButtonText, { color: colors.success }]}>UPDATE</Text>
           </TouchableOpacity>
         ) : (
           <>
             {item.isArchived && onUnarchive ? (
               <TouchableOpacity onPress={() => onUnarchive(item.id)} style={styles.actionButton}>
-                <Text style={styles.unarchiveButtonText}>UN-ARC</Text>
+                <Text style={[styles.unarchiveButtonText, { color: colors.success }]}>UN-ARC</Text>
               </TouchableOpacity>
             ) : item.completed && onArchive && (
                <TouchableOpacity onPress={() => onArchive(item.id)} style={styles.actionButton}>
-                <Text style={styles.archiveButtonText}>ARCHIVE</Text>
+                <Text style={[styles.archiveButtonText, { color: colors.accent }]}>ARCHIVE</Text>
               </TouchableOpacity>
             )}
             {!item.isPenalty && (
@@ -205,14 +210,14 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
                 onPress={() => setIsEditing(true)} 
                 style={styles.actionButton}
               >
-                <Text style={styles.editButtonText}>MOD</Text>
+                <Text style={[styles.editButtonText, { color: colors.primary }]}>MOD</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity 
               style={styles.actionButton} 
               onPress={() => onDelete(item.id)}
             >
-              <Text style={styles.deleteButtonText}>DEL</Text>
+              <Text style={[styles.deleteButtonText, { color: colors.danger }]}>DEL</Text>
             </TouchableOpacity>
           </>
         )}

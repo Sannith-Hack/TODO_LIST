@@ -40,6 +40,7 @@ const HunterReportScreen = ({ onOpenMenu, stats }: HunterReportScreenProps) => {
   };
 
   const xpData = getXPData();
+  const validXPData = xpData && xpData.length > 0 ? xpData : [0, 0, 0];
   const totalXP30 = xpData.reduce((a, b) => a + b, 0);
   const maxXP = Math.max(...xpData, 50);
 
@@ -68,7 +69,7 @@ const HunterReportScreen = ({ onOpenMenu, stats }: HunterReportScreenProps) => {
         <View style={[styles.chartContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={{ height: 200, flexDirection: 'row', padding: 10 }}>
                 <YAxis
-                    data={xpData}
+                    data={validXPData}
                     contentInset={{ top: 20, bottom: 20 }}
                     svg={{ fill: colors.textDim, fontSize: 10 }}
                     numberOfTicks={5}
@@ -77,7 +78,7 @@ const HunterReportScreen = ({ onOpenMenu, stats }: HunterReportScreenProps) => {
                 <View style={{ flex: 1, marginLeft: 10 }}>
                     <LineChart
                         style={{ flex: 1 }}
-                        data={xpData}
+                        data={validXPData}
                         svg={{ stroke: colors.primary, strokeWidth: 2 }}
                         contentInset={{ top: 20, bottom: 20 }}
                         curve={shape.curveMonotoneX}
