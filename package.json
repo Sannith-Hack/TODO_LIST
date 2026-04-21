@@ -17,8 +17,7 @@
     "react-native": "0.76.1",
     "react-native-haptic-feedback": "^3.0.0",
     "react-native-reanimated": "^3.16.1",
-    "react-native-sound": "^0.13.0",
-    "react-native-svg": "^7.2.1"
+    "react-native-sound": "^0.13.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

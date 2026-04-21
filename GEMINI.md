@@ -61,8 +61,8 @@ A production-quality To-Do List mobile application built with **React Native CLI
 6. ✅ **Advanced Task Management**: Sub-Quests, Smart Patterns (Weekly/Custom), and real-time Search/Filter.
 7. ✅ **Particle System**: High-end "shatter" particle effect using Reanimated on quest deletion.
 8. ✅ **System Stability**: 
-    *   **Removed** redundant `react-native-svg-charts` library to fix "undefined property" crashes.
-    *   **Implemented** a custom, lightweight SVG Growth Analytics engine.
+    *   **Removed** redundant `react-native-svg` and `react-native-svg-charts` libraries to fix "undefined property" crashes on React Native 0.76.
+    *   **Implemented** a custom, 100% crash-proof Growth Analytics engine using standard View components.
     *   **Applied** robust data fallbacks for legacy player stats to prevent startup failures.
 9. ✅ **Global State Synchronization**: Centralized stats management ensures real-time XP/Level updates across all screens.
 

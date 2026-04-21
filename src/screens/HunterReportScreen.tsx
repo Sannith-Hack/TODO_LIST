@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Dim
 import { getColors } from '../utils/theme';
 import { loadHistory } from '../storage/taskStorage';
 import { HistoryEntry, UserStats } from '../utils/types';
-import { Svg, Path } from 'react-native-svg';
 
 interface HunterReportScreenProps {
   onOpenMenu: () => void;
@@ -12,7 +11,6 @@ interface HunterReportScreenProps {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHART_HEIGHT = 200;
-const CHART_PADDING = 20;
 
 const HunterReportScreen = ({ onOpenMenu, stats }: HunterReportScreenProps) => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -51,17 +49,6 @@ const HunterReportScreen = ({ onOpenMenu, stats }: HunterReportScreenProps) => {
   const totalXP30 = xpData.reduce((a, b) => a + b, 0);
   const maxXP = Math.max(...xpData, 50);
 
-  const chartWidth = SCREEN_WIDTH - 60;
-  const points = xpData.map((val, i) => {
-    const x = (i / (xpData.length - 1)) * (chartWidth - CHART_PADDING * 2) + CHART_PADDING;
-    const y = CHART_HEIGHT - ((val / maxXP) * (CHART_HEIGHT - CHART_PADDING * 2) + CHART_PADDING);
-    return { x, y };
-  });
-
-  const d = points.reduce((path, point, i) => {
-    return i === 0 ? `M ${point.x},${point.y}` : `${path} L ${point.x},${point.y}`;
-  }, '');
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -84,20 +71,33 @@ const HunterReportScreen = ({ onOpenMenu, stats }: HunterReportScreenProps) => {
         </View>
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>GROWTH ANALYTICS</Text>
+        
+        {/* Safe Bar Chart using standard Views */}
         <View style={[styles.chartContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={{ height: CHART_HEIGHT, width: chartWidth }}>
-                <Svg height={CHART_HEIGHT} width={chartWidth}>
-                    <Path
-                        d={d}
-                        fill="none"
-                        stroke={colors.primary}
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </Svg>
+            <View style={styles.barChartWrapper}>
+                {xpData.map((val, i) => {
+                    const height = (val / maxXP) * (CHART_HEIGHT - 40);
+                    return (
+                        <View key={i} style={styles.barColumn}>
+                            <View 
+                                style={[
+                                    styles.bar, 
+                                    { 
+                                        height: Math.max(height, 2), 
+                                        backgroundColor: val > 0 ? colors.primary : colors.border,
+                                        opacity: val > 0 ? 1 : 0.3
+                                    }
+                                ]} 
+                            />
+                        </View>
+                    );
+                })}
             </View>
-            <Text style={[styles.chartLabel, { color: colors.textDim }]}>XP GAIN OVER THE LAST 30 DAYS</Text>
+            <View style={styles.chartAxis}>
+                <Text style={[styles.axisText, { color: colors.textDim }]}>30D AGO</Text>
+                <Text style={[styles.axisText, { color: colors.textDim }]}>TODAY</Text>
+            </View>
+            <Text style={[styles.chartLabel, { color: colors.textDim }]}>XP GAIN (LAST 30 DAYS)</Text>
         </View>
 
         <View style={styles.statsGrid}>
@@ -136,7 +136,12 @@ const styles = StyleSheet.create({
   rankBadge: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 4 },
   rankBadgeText: { fontSize: 9, fontWeight: 'bold' },
   sectionTitle: { fontSize: 14, fontWeight: 'bold', letterSpacing: 1, marginBottom: 15, opacity: 0.8 },
-  chartContainer: { borderWidth: 1, padding: 10, marginBottom: 20, alignItems: 'center', justifyContent: 'center' },
+  chartContainer: { borderWidth: 1, padding: 15, marginBottom: 20 },
+  barChartWrapper: { height: CHART_HEIGHT - 40, flexDirection: 'row', alignItems: 'bottom', justifyContent: 'space-between', paddingBottom: 5 },
+  barColumn: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingHorizontal: 1 },
+  bar: { width: '100%', minWidth: 2, borderRadius: 1 },
+  chartAxis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 5 },
+  axisText: { fontSize: 8, fontWeight: 'bold' },
   chartLabel: { fontSize: 9, textAlign: 'center', marginTop: 10, fontWeight: 'bold' },
   statsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
   statBox: { flex: 1, padding: 15, borderWidth: 1, marginHorizontal: 5, alignItems: 'center' },

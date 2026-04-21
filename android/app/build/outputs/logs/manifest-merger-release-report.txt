@@ -53,7 +53,6 @@ MERGED from [:notifee_react-native] D:\User\Desktop\TODO_LIST\node_modules\@noti
 MERGED from [:react-native-async-storage_async-storage] D:\User\Desktop\TODO_LIST\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-9:12
 MERGED from [:react-native-reanimated] D:\User\Desktop\TODO_LIST\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
-MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:2:1-12:12
 MERGED from [androidx.work:work-runtime:2.8.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\01ab4a40946cafc93ea9b5ac1434f461\transformed\work-runtime-2.8.0\AndroidManifest.xml:17:1-145:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\502a3a514c9d4b880d09dbcd8830f016\transformed\appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
@@ -163,8 +162,6 @@ MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modul
 MERGED from [:react-native-haptic-feedback] D:\User\Desktop\TODO_LIST\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-reanimated] D:\User\Desktop\TODO_LIST\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-reanimated] D:\User\Desktop\TODO_LIST\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
-MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
-MERGED from [:react-native-svg] D:\User\Desktop\TODO_LIST\node_modules\react-native-svg\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:5:5-44
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:10:5-44
 MERGED from [com.facebook.react:react-android:0.76.1] C:\Users\Admin\.gradle\caches\8.10.2\transforms\d2831b0cc5cb599d2b7c45d3a3aa3e3c\transformed\react-android-0.76.1-release\AndroidManifest.xml:10:5-44
 MERGED from [androidx.work:work-runtime:2.8.0] C:\Users\Admin\.gradle\caches\8.10.2\transforms\01ab4a40946cafc93ea9b5ac1434f461\transformed\work-runtime-2.8.0\AndroidManifest.xml:21:5-44
