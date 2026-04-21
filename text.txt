@@ -78,23 +78,6 @@
 
   Here are the specific features I recommend adding:
 
-  1. Immersion: "System" Feedback
-  To capture the true Solo Leveling vibe, the app needs to feel "alive."
-   * Haptic Feedback & Sound Effects: Add a subtle "ping" sound (the iconic system notification) and haptic vibrations when a Quest is
-     completed or when you Level Up. This provides immediate, satisfying tactile feedback.
-   * Glitch/Particle Animations: Use react-native-reanimated for more advanced animations. For example, when a quest is deleted, it could
-     "dissolve" into blue particles rather than just sliding away.
-   * Rank-Based UI Evolution: Change the UI glow color or border thickness based on the player's Rank (E-Rank = Gray/Blue, S-Rank = Gold/Neon
-     Purple).
-
-  2. Utility: Advanced Task Management
-  The current task system is great, but real-world productivity often needs more granularity.
-   * Sub-Quests (Checklists): For "Long-Term" quests, allow users to add a checklist of smaller steps. This makes big goals less intimidating
-     and keeps the user engaged.
-   * Smart Recurring Patterns: Instead of just "Daily," add options for "Weekly" (e.g., Gym every Monday/Wednesday) or "Custom" (e.g., every
-     3 days).
-   * Search and Archive: As the Quest Log and Memo Pad grow, users will need a search bar to find old tasks or a way to view "Archived"
-     one-time quests they finished months ago.
 
   3. Motivation: The "Shadow" Streak System
   Gamification works best when there is a "cost" to being lazy.
