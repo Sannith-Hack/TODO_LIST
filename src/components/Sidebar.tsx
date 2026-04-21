@@ -7,7 +7,8 @@ import {
   Dimensions, 
   TouchableOpacity, 
   TouchableWithoutFeedback,
-  SafeAreaView 
+  SafeAreaView,
+  ScrollView
 } from 'react-native';
 import { COLORS, SHADOWS, getRankTheme } from '../utils/theme';
 import { UserStats } from '../utils/types';
@@ -15,8 +16,8 @@ import { UserStats } from '../utils/types';
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  currentScreen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo';
-  onNavigate: (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo') => void;
+  currentScreen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport';
+  onNavigate: (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport') => void;
   stats: UserStats | null;
 }
 
@@ -31,6 +32,7 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
   const userRank = stats?.reputationTitle?.split('-')[0] || 'E';
   const rankTheme = getRankTheme(userRank);
   const primaryColor = rankTheme.primary;
+  const colors = stats?.theme === 'light' ? LIGHT_COLORS : COLORS;
 
   useEffect(() => {
     if (isOpen) {
@@ -53,7 +55,7 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
     }
   }, [isOpen]);
 
-  const handleNavigate = (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo') => {
+  const handleNavigate = (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport') => {
     onNavigate(screen);
     onClose();
   };
@@ -69,45 +71,48 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
 
       <Animated.View style={[
         styles.sidebar, 
-        { transform: [{ translateX: slideAnim }], opacity: glitchAnim }
+        { transform: [{ translateX: slideAnim }], opacity: glitchAnim, backgroundColor: colors.surface, borderRightColor: primaryColor }
       ]}>
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.profileSection}>
-            <View style={[styles.avatarContainer, { borderColor: primaryColor }, SHADOWS.glowCustom(primaryColor)]}>
+            <View style={[styles.avatarContainer, { borderColor: primaryColor, backgroundColor: colors.background }, SHADOWS.glowCustom(primaryColor)]}>
               <Text style={[styles.avatarText, { color: primaryColor }]}>{stats?.playerName?.[0] || 'P'}</Text>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.playerName}>{stats?.playerName || 'PLAYER'}</Text>
+              <Text style={[styles.playerName, { color: colors.text }]}>{stats?.playerName || 'PLAYER'}</Text>
               <Text style={[styles.rankText, { color: primaryColor }]}>{stats?.reputationTitle || 'E-RANK HUNTER'}</Text>
-              <Text style={styles.levelText}>LEVEL {stats?.totalLevel || 1}</Text>
+              <Text style={[styles.levelText, { color: colors.text }]}>LEVEL {stats?.totalLevel || 1}</Text>
             </View>
           </View>
 
           <View style={[styles.divider, { backgroundColor: primaryColor }]} />
 
-          <View style={styles.menuItems}>
+          <ScrollView style={styles.menuItems}>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'Home' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('Home')}>
-              <Text style={[styles.menuText, currentScreen === 'Home' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>QUEST LOG</Text>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'Home' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>QUEST LOG</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'Memo' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('Memo')}>
-              <Text style={[styles.menuText, currentScreen === 'Memo' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>MEMO PAD</Text>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'Memo' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>MEMO PAD</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'Calendar' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('Calendar')}>
-              <Text style={[styles.menuText, currentScreen === 'Calendar' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>CHRONICLES</Text>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'Calendar' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>CHRONICLES</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.menuItem, currentScreen === 'HunterReport' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('HunterReport')}>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'HunterReport' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>HUNTER'S REPORT</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'SkillTree' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('SkillTree')}>
-              <Text style={[styles.menuText, currentScreen === 'SkillTree' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>STATUS WINDOW</Text>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'SkillTree' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>STATUS WINDOW</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'Testing' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('Testing')}>
-              <Text style={[styles.menuText, currentScreen === 'Testing' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>SYSTEM CONSOLE</Text>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'Testing' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>SYSTEM CONSOLE</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'Settings' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('Settings')}>
-              <Text style={[styles.menuText, currentScreen === 'Settings' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>SYSTEM SETTINGS</Text>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'Settings' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>SYSTEM SETTINGS</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>SYSTEM v1.0.6</Text>
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
+            <Text style={[styles.footerText, { color: colors.textDim }]}>SYSTEM v1.0.7</Text>
             <Text style={[styles.footerSubtext, { color: primaryColor }]}>SOLO LEVELING PROTOCOL</Text>
           </View>
         </SafeAreaView>

@@ -79,30 +79,16 @@
   Here are the specific features I recommend adding:
 
 
-  3. Motivation: The "Shadow" Streak System
-  Gamification works best when there is a "cost" to being lazy.
-   * Streak Bonus: Completing all daily quests for X days in a row could grant a "Shadow Soldier" (an icon or badge in the status window) or
-     a temporary XP multiplier.
-   * Titles & Achievements: Beyond just levels, give users titles for specific behaviors.
-       * "The Early Riser" (Complete 5 quests before 8 AM).
-       * "Iron Body" (Reach Level 5 in Workout skill).
-   * Attribute Point Allocation: Instead of auto-leveling, give the user 3 "Stat Points" per level to manually put into "Strength,"
-     "Agility," or "Intelligence" (which could correspond to their Skill Trees).
+  Why Supabase?
+   * Performance: Faster setup without native linking.
+   * Power: SQL allows for advanced analytics (Hunter's Reports) on the server side.
+   * Stability: Keeps your React Native "Stable Bridge Mode" architecture clean.
 
-  4. Technical Reliability: Data & Accessibility
-  To make it "functionally good" for long-term use:
-   * Cloud Sync/Export: Since data is currently only in AsyncStorage, if the user changes phones, they lose everything. Adding a "JSON
-     Export/Import" button or Firebase/Supabase integration would be a huge "Pro" feature.
-   * Dark/Light Mode Toggle: Even though the "System" is dark, some users might prefer a "System: White" theme for outdoor use.
-   * Widgets: A simple Android Home Screen widget that shows the "Daily Quest Progress" would keep the app top-of-mind without the user
-     needing to open it.
-
-  5. Analytics: The "Hunter's Report"
-   * Progress Charts: A screen that shows a line graph of XP gained over the last 30 days. This helps users visualize their growth—seeing a
-     "dip" in the graph can motivate them to work harder.
-
-  Which of these directions interest you the most? I can help you implement the Haptic/Sound feedback or the Sub-Quest checklist logic next
-  if you'd like!
-
+  Implementation Strategy
+   1. Install Client: npm install @supabase/supabase-js.
+   2. Define Schema: Create a players table with columns for id, name, and a data JSONB column.
+   3. Sync Logic:
+       * Push: In Settings, convert AsyncStorage data to JSON and upsert to Supabase.
+       * Pull: When logging in on a new device, fetch the JSON and overwrite AsyncStorage.
 
   npx react-native run-android --mode=release --no-packager

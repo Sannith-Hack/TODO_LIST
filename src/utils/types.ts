@@ -53,9 +53,21 @@ export interface UserStats {
   statPoints: number;
   reputationTitle: string;
   skills: Record<SkillType, SkillProgress>;
+  attributes: {
+    strength: number;
+    agility: number;
+    intelligence: number;
+    sense: number;
+    vitality: number;
+  };
+  streakCount: number;
+  maxStreak: number;
+  shadowSoldiers: string[]; // List of earned shadow soldier names
+  achievements: string[]; // List of earned achievement IDs/Names
   lastResetDate: number;
   notificationSettings: {
     enabled: boolean;
     interval: 15 | 30 | 60 | 120;
   };
+  theme: 'dark' | 'light';
 }

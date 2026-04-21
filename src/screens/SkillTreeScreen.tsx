@@ -62,10 +62,38 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
     refreshStats();
   };
 
+  const handleSpendAttribute = async (attr: keyof UserStats['attributes']) => {
+    if (!stats || stats.statPoints <= 0) {
+      Alert.alert('Insufficient Points', 'You have no available Stat Points.');
+      triggerHaptic('notificationError');
+      return;
+    }
+
+    const newStats: UserStats = {
+      ...stats,
+      statPoints: stats.statPoints - 1,
+      attributes: {
+        ...stats.attributes,
+        [attr]: stats.attributes[attr] + 1
+      }
+    };
+
+    triggerHaptic('impactMedium');
+    await saveStats(newStats);
+    refreshStats();
+  };
+
   if (!stats) return null;
 
   const skillOrder: SkillType[] = ['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'];
-  const chartData = skillOrder.map(s => Math.min(stats.skills[s].level * 2, 100));
+  const chartData = [
+    stats.attributes.strength,
+    stats.attributes.agility,
+    stats.attributes.intelligence,
+    stats.attributes.sense,
+    stats.attributes.vitality
+  ].map(v => Math.min(v * 2, 100));
+  const attrLabels = ['STR', 'AGI', 'INT', 'SEN', 'VIT'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -86,19 +114,67 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
           <View style={styles.divider} />
         </View>
 
-        <View style={styles.chartSection}>
-          <RadarChart data={chartData} labels={skillOrder.map(s => s.substring(0, 3))} />
+        <View style={styles.statusRow}>
+            <View style={styles.chartSection}>
+            <RadarChart data={chartData} labels={attrLabels} />
+            </View>
+            <View style={styles.overallStats}>
+                <View style={styles.statCircle}>
+                    <Text style={styles.levelLabel}>LEVEL</Text>
+                    <Text style={styles.levelValue}>{stats.totalLevel}</Text>
+                </View>
+                <View style={styles.streakBadge}>
+                    <Text style={styles.streakText}>🔥 {stats.streakCount} DAY STREAK</Text>
+                </View>
+            </View>
         </View>
 
-        <View style={styles.overallStats}>
-          <View style={styles.statCircle}>
-            <Text style={styles.levelLabel}>LEVEL</Text>
-            <Text style={styles.levelValue}>{stats.totalLevel}</Text>
-          </View>
-          <View style={styles.statPointsBadge}>
-            <Text style={styles.statPointsText}>AVAILABLE POINTS: {stats.statPoints}</Text>
-          </View>
+        <View style={styles.statPointsBadge}>
+            <Text style={styles.statPointsText}>AVAILABLE STAT POINTS: {stats.statPoints}</Text>
         </View>
+
+        <Text style={styles.sectionTitle}>ATTRIBUTES</Text>
+        <View style={styles.attributesContainer}>
+            {(Object.keys(stats.attributes) as Array<keyof UserStats['attributes']>).map((attr) => (
+                <View key={attr} style={styles.attrRow}>
+                    <Text style={styles.attrLabel}>{attr.toUpperCase()}</Text>
+                    <View style={styles.attrValueContainer}>
+                        <Text style={styles.attrValue}>{stats.attributes[attr]}</Text>
+                        {stats.statPoints > 0 && (
+                            <TouchableOpacity onPress={() => handleSpendAttribute(attr)} style={styles.attrPlusBtn}>
+                                <Text style={styles.attrPlusText}>+</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                </View>
+            ))}
+        </View>
+
+        {stats.shadowSoldiers && stats.shadowSoldiers.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>SHADOW ARMY</Text>
+            <View style={styles.shadowSoldiersContainer}>
+                {stats.shadowSoldiers.map(s => (
+                    <View key={s} style={styles.shadowBadge}>
+                        <Text style={styles.shadowText}>{s}</Text>
+                    </View>
+                ))}
+            </View>
+          </>
+        )}
+
+        {stats.achievements && stats.achievements.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>ACHIEVEMENTS</Text>
+            <View style={styles.achievementsContainer}>
+                {stats.achievements.map(a => (
+                    <View key={a} style={styles.achievementBadge}>
+                        <Text style={styles.achievementText}>🏆 {a.replace('_', ' ')}</Text>
+                    </View>
+                ))}
+            </View>
+          </>
+        )}
 
         <Text style={styles.sectionTitle}>SKILL TREES</Text>
 
@@ -170,6 +246,22 @@ const styles = StyleSheet.create({
   skillXp: { color: COLORS.textDim, fontSize: 12 },
   progressBarContainer: { height: 6, backgroundColor: COLORS.background, width: '100%', overflow: 'hidden' },
   progressBar: { height: '100%' },
+  statusRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  streakBadge: { backgroundColor: COLORS.accent + '22', paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: COLORS.accent, borderRadius: 20 },
+  streakText: { color: COLORS.accent, fontSize: 10, fontWeight: 'bold' },
+  attributesContainer: { backgroundColor: COLORS.surface, padding: 16, marginBottom: 25, borderWidth: 1, borderColor: COLORS.border },
+  attrRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  attrLabel: { color: COLORS.textDim, fontSize: 12, fontWeight: 'bold', letterSpacing: 1 },
+  attrValueContainer: { flexDirection: 'row', alignItems: 'center' },
+  attrValue: { color: COLORS.primary, fontSize: 16, fontWeight: 'bold', marginRight: 15 },
+  attrPlusBtn: { width: 22, height: 22, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  attrPlusText: { color: COLORS.background, fontSize: 16, fontWeight: 'bold' },
+  shadowSoldiersContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 25 },
+  shadowBadge: { backgroundColor: '#111', paddingHorizontal: 15, paddingVertical: 8, borderWidth: 1, borderColor: COLORS.primary, marginRight: 10, marginBottom: 10, ...SHADOWS.glowCustom(COLORS.primary) },
+  shadowText: { color: COLORS.primary, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  achievementsContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 25 },
+  achievementBadge: { backgroundColor: COLORS.surface, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: COLORS.success, marginRight: 8, marginBottom: 8 },
+  achievementText: { color: COLORS.success, fontSize: 10, fontWeight: 'bold' },
 });
 
 export default SkillTreeScreen;

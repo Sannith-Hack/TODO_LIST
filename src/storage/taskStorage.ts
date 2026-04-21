@@ -20,10 +20,22 @@ const INITIAL_STATS: UserStats = {
   statPoints: 0,
   reputationTitle: 'E-RANK HUNTER',
   lastResetDate: Date.now(),
+  streakCount: 0,
+  maxStreak: 0,
+  shadowSoldiers: [],
+  achievements: [],
+  attributes: {
+    strength: 10,
+    agility: 10,
+    intelligence: 10,
+    sense: 10,
+    vitality: 10,
+  },
   notificationSettings: {
     enabled: false,
     interval: 60,
   },
+  theme: 'dark',
   skills: {
     Coding: { ...INITIAL_SKILL_PROGRESS },
     Workout: { ...INITIAL_SKILL_PROGRESS },

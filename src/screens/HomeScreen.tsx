@@ -149,6 +149,37 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
       // Day Reset Logic
       if (today > lastResetDay) {
         const missedDailies = currentTasks.filter(t => t.category === 'Regular' && !t.completed && (!t.frequency || t.frequency === 'Daily'));
+        
+        // Streak Logic: Check if all dailies were completed yesterday
+        // Only if there were dailies to complete
+        const hadDailiesYesterday = currentTasks.some(t => t.category === 'Regular' && (!t.frequency || t.frequency === 'Daily'));
+        if (hadDailiesYesterday && missedDailies.length === 0) {
+          updatedStats.streakCount += 1;
+          if (updatedStats.streakCount > updatedStats.maxStreak) {
+            updatedStats.maxStreak = updatedStats.streakCount;
+          }
+          
+          // Shadow Soldier Rewards
+          const streak = updatedStats.streakCount;
+          const soldiers = updatedStats.shadowSoldiers || [];
+          if (streak >= 3 && !soldiers.includes('IGRIS')) {
+            soldiers.push('IGRIS');
+            Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: IGRIS (3-Day Streak)');
+          } else if (streak >= 7 && !soldiers.includes('TANK')) {
+            soldiers.push('TANK');
+            Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: TANK (7-Day Streak)');
+          } else if (streak >= 15 && !soldiers.includes('IRON')) {
+            soldiers.push('IRON');
+            Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: IRON (15-Day Streak)');
+          } else if (streak >= 30 && !soldiers.includes('BERU')) {
+            soldiers.push('BERU');
+            Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: BERU (30-Day Streak)');
+          }
+          updatedStats.shadowSoldiers = soldiers;
+        } else if (hadDailiesYesterday && missedDailies.length > 0) {
+          updatedStats.streakCount = 0; // Reset streak if any daily missed
+        }
+
         if (missedDailies.length > 0) {
           const penaltyQuest: Task = {
             id: 'penalty-' + Date.now(),
@@ -171,6 +202,13 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           return t;
         });
         updatedStats.lastResetDate = Date.now();
+        statsUpdated = true;
+      }
+
+      // Achievement Check: Iron Body (Workout Level 5)
+      if (updatedStats.skills.Workout.level >= 5 && !updatedStats.achievements.includes('IRON_BODY')) {
+        updatedStats.achievements.push('IRON_BODY');
+        Alert.alert('ACHIEVEMENT UNLOCKED', 'IRON BODY: Reach Level 5 in Workout.');
         statsUpdated = true;
       }
 
@@ -297,11 +335,28 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
         // Handle XP Gain
         if (stats) {
           const skill = task.skillType;
-          const xpGain = task.xpValue || 10;
+          
+          // Streak Multiplier: +10% XP per streak day, max 2x (100% bonus)
+          const multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
+          const baseXP = task.xpValue || 10;
+          const xpGain = Math.floor(baseXP * multiplier);
+          
           const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
           const newStats = { ...stats };
           newStats.skills[skill] = updatedSkill;
           newStats.totalXp += xpGain;
+
+          // Early Riser Achievement Check
+          const nowHour = new Date().getHours();
+          if (nowHour < 8) {
+            const todayStarts = new Date().setHours(0,0,0,0);
+            const earlyTasks = updatedTasks.filter(t => t.completed && t.completedAt && t.completedAt > todayStarts && new Date(t.completedAt).getHours() < 8);
+            if (earlyTasks.length >= 5 && !newStats.achievements.includes('EARLY_RISER')) {
+              newStats.achievements.push('EARLY_RISER');
+              Alert.alert('ACHIEVEMENT UNLOCKED', 'EARLY RISER: Complete 5 quests before 8 AM.');
+            }
+          }
+
           if (levelUpCount > 0) {
             newStats.totalLevel += levelUpCount;
             newStats.statPoints += levelUpCount * 3;
@@ -348,7 +403,12 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
         playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
         if (stats) {
           const skill = task.skillType;
-          const xpGain = task.xpValue || 10;
+          
+          // Streak Multiplier: +10% XP per streak day, max 2x (100% bonus)
+          const multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
+          const baseXP = task.xpValue || 10;
+          const xpGain = Math.floor(baseXP * multiplier);
+          
           const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
           const newStats = { ...stats };
           newStats.skills[skill] = updatedSkill;

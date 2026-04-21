@@ -1,30 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Switch } from 'react-native';
-import { COLORS, SHADOWS } from '../utils/theme';
-import { loadStats, saveStats, loadTasks } from '../storage/taskStorage';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import { COLORS, getColors, SHADOWS } from '../utils/theme';
+import { loadStats, saveStats, loadTasks, clearAllData } from '../storage/taskStorage';
 import { UserStats } from '../utils/types';
 import { updateSystemNotifications } from '../utils/notifications';
-import notifee from '@notifee/react-native';
 import { triggerHaptic } from '../utils/feedback';
 
 interface SettingsScreenProps {
   onOpenMenu: () => void;
+  stats: UserStats | null;
+  refreshStats: () => void;
 }
 
-const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
-  const [stats, setStats] = useState<UserStats | null>(null);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      const data = await loadStats();
-      if (!data.notificationSettings) {
-        data.notificationSettings = { enabled: false, interval: 60 };
-        await saveStats(data);
-      }
-      setStats(data);
-    };
-    fetchSettings();
-  }, []);
+const SettingsScreen = ({ onOpenMenu, stats, refreshStats }: SettingsScreenProps) => {
+  const theme = stats?.theme || 'dark';
+  const colors = getColors(theme);
 
   const updateReminders = async (enabled: boolean) => {
     if (!stats) return;
@@ -33,8 +23,8 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
       ...stats,
       notificationSettings: { ...stats.notificationSettings, enabled }
     };
-    setStats(updated);
     await saveStats(updated);
+    refreshStats();
 
     const tasks = await loadTasks();
     await updateSystemNotifications(tasks, updated);
@@ -47,8 +37,8 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
       ...stats,
       notificationSettings: { ...stats.notificationSettings, interval }
     };
-    setStats(updated);
     await saveStats(updated);
+    refreshStats();
 
     if (updated.notificationSettings.enabled) {
       const tasks = await loadTasks();
@@ -56,42 +46,88 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
     }
   };
 
+  const toggleTheme = async () => {
+    if (!stats) return;
+    triggerHaptic('impactHeavy');
+    const updated: UserStats = {
+      ...stats,
+      theme: stats.theme === 'dark' ? 'light' : 'dark'
+    };
+    await saveStats(updated);
+    refreshStats();
+  };
+
+  const handleClearData = () => {
+    Alert.alert(
+      "EXTREME CAUTION",
+      "Are you sure you want to clear all System data? This cannot be undone.",
+      [
+        { text: "CANCEL", style: "cancel" },
+        { 
+          text: "EXECUTE", 
+          style: "destructive",
+          onPress: async () => {
+            await clearAllData();
+            triggerHaptic('notificationError');
+            Alert.alert("SYSTEM RESET", "All data has been erased. Restart the application.");
+          }
+        }
+      ]
+    );
+  };
+
   if (!stats) return null;
 
   const currentSettings = stats.notificationSettings || { enabled: false, interval: 60 };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={onOpenMenu}>
-          <View style={styles.menuLine} />
-          <View style={[styles.menuLine, { width: 15 }]} />
-          <View style={styles.menuLine} />
+          <View style={[styles.menuLine, { backgroundColor: colors.primary }]} />
+          <View style={[styles.menuLine, { width: 15, backgroundColor: colors.primary }]} />
+          <View style={[styles.menuLine, { backgroundColor: colors.primary }]} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>SYSTEM SETTINGS</Text>
+        <Text style={[styles.headerTitle, { color: colors.primary }]}>SYSTEM SETTINGS</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>PROTOCOL: REMINDERS</Text>
-          
-          <View style={styles.settingRow}>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>SYSTEM VISUALS</Text>
+          <View style={[styles.settingRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View>
-              <Text style={styles.settingLabel}>QUEST REMINDERS</Text>
-              <Text style={styles.settingDesc}>Notify if daily quests are incomplete</Text>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>THEME: {stats.theme === 'dark' ? 'SYSTEM DARK' : 'SYSTEM WHITE'}</Text>
+              <Text style={[styles.settingDesc, { color: colors.textDim }]}>Adjust the interface for environmental visibility</Text>
+            </View>
+            <Switch
+              value={stats.theme === 'light'}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#333', true: colors.primary }}
+              thumbColor={colors.white}
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>PROTOCOL: REMINDERS</Text>
+          
+          <View style={[styles.settingRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>QUEST REMINDERS</Text>
+              <Text style={[styles.settingDesc, { color: colors.textDim }]}>Notify if daily quests are incomplete</Text>
             </View>
             <Switch
               value={currentSettings.enabled}
               onValueChange={updateReminders}
-              trackColor={{ false: COLORS.secondary, true: COLORS.primary }}
-              thumbColor={COLORS.text}
+              trackColor={{ false: '#333', true: colors.primary }}
+              thumbColor={colors.white}
             />
           </View>
 
           {currentSettings.enabled && (
-            <View style={styles.intervalContainer}>
-              <Text style={styles.subLabel}>HARASSMENT INTERVAL (MINUTES)</Text>
+            <View style={[styles.intervalContainer, { backgroundColor: colors.surface + '88', borderColor: colors.border }]}>
+              <Text style={[styles.subLabel, { color: colors.textDim }]}>HARASSMENT INTERVAL (MINUTES)</Text>
               <View style={styles.intervalRow}>
                 {[15, 30, 60, 120].map((val) => (
                   <TouchableOpacity
@@ -99,31 +135,40 @@ const SettingsScreen = ({ onOpenMenu }: SettingsScreenProps) => {
                     onPress={() => updateInterval(val as any)}
                     style={[
                       styles.intervalBtn,
-                      currentSettings.interval === val && styles.intervalBtnActive
+                      { backgroundColor: colors.background, borderColor: colors.border },
+                      currentSettings.interval === val && [styles.intervalBtnActive, { borderColor: colors.primary, backgroundColor: colors.primary + '22' }]
                     ]}
                   >
                     <Text style={[
                       styles.intervalText,
-                      currentSettings.interval === val && styles.intervalTextActive
+                      { color: colors.textDim },
+                      currentSettings.interval === val && { color: colors.primary }
                     ]}>
                       {val}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              <Text style={styles.warningText}>
-                * The system will persist until all daily protocols are executed.
-              </Text>
             </View>
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SYSTEM INFO</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>VERSION: 1.0.6</Text>
-            <Text style={styles.infoText}>LICENSE: SOLO LEVELING PROTOCOL</Text>
-            <Text style={styles.infoText}>STATUS: OPERATIONAL</Text>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>DATA MANAGEMENT</Text>
+          <TouchableOpacity 
+            style={[styles.dangerBtn, { borderColor: colors.danger }]} 
+            onPress={handleClearData}
+          >
+            <Text style={[styles.dangerBtnText, { color: colors.danger }]}>RESET ALL SYSTEM DATA</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>SYSTEM INFO</Text>
+          <View style={[styles.infoBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.infoText, { color: colors.textDim }]}>VERSION: 1.0.7</Text>
+            <Text style={[styles.infoText, { color: colors.textDim }]}>LICENSE: SOLO LEVELING PROTOCOL</Text>
+            <Text style={[styles.infoText, { color: colors.textDim }]}>STATUS: OPERATIONAL</Text>
           </View>
         </View>
       </ScrollView>
@@ -259,6 +304,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
     marginBottom: 8,
+    letterSpacing: 1,
+  },
+  dangerBtn: {
+    padding: 15,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dangerBtnText: {
+    fontSize: 12,
+    fontWeight: 'bold',
     letterSpacing: 1,
   },
 });

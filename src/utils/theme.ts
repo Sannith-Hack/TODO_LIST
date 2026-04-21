@@ -12,6 +12,24 @@ export const COLORS = {
   white: '#FFFFFF',
 };
 
+export const LIGHT_COLORS = {
+  background: '#F5F7FA',
+  surface: '#FFFFFF',
+  primary: '#007AFF',
+  secondary: '#E5E5EA',
+  text: '#1C1C1E',
+  textDim: '#8E8E93',
+  accent: '#5856D6',
+  success: '#34C759',
+  danger: '#FF3B30',
+  border: '#C7C7CC',
+  white: '#FFFFFF',
+};
+
+export const getColors = (theme: 'dark' | 'light' = 'dark') => {
+  return theme === 'light' ? LIGHT_COLORS : COLORS;
+};
+
 export const RANK_THEMES = {
   'E': { primary: '#00D1FF', accent: '#7000FF', glow: '#00D1FF' }, // Blue
   'D': { primary: '#00FF94', accent: '#00D1FF', glow: '#00FF94' }, // Green

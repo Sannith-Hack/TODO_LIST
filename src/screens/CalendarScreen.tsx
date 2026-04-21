@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
-import { COLORS, SHADOWS, SKILL_COLORS } from '../utils/theme';
+import { COLORS, getColors, SHADOWS, SKILL_COLORS } from '../utils/theme';
 import { loadHistory } from '../storage/taskStorage';
-import { HistoryEntry } from '../utils/types';
+import { HistoryEntry, UserStats } from '../utils/types';
 
 interface CalendarScreenProps {
   onOpenMenu: () => void;
+  stats: UserStats | null;
 }
 
 const { width } = Dimensions.get('window');
 
-const CalendarScreen = ({ onOpenMenu }: CalendarScreenProps) => {
+const CalendarScreen = ({ onOpenMenu, stats }: CalendarScreenProps) => {
   const [completedEntries, setCompletedEntries] = useState<HistoryEntry[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  const theme = stats?.theme || 'dark';
+  const colors = getColors(theme);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -46,8 +50,8 @@ const CalendarScreen = ({ onOpenMenu }: CalendarScreenProps) => {
       );
 
       days.push(
-        <View key={d} style={styles.dayCell}>
-          <Text style={styles.dayText}>{d}</Text>
+        <View key={d} style={[styles.dayCell, { borderColor: colors.border }]}>
+          <Text style={[styles.dayText, { color: colors.text }]}>{d}</Text>
           <View style={styles.dotContainer}>
             {dayTasks.map((t, i) => (
               <View 
@@ -73,32 +77,32 @@ const CalendarScreen = ({ onOpenMenu }: CalendarScreenProps) => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={onOpenMenu}>
-          <View style={styles.menuLine} />
-          <View style={[styles.menuLine, { width: 15 }]} />
-          <View style={styles.menuLine} />
+          <View style={[styles.menuLine, { backgroundColor: colors.primary }]} />
+          <View style={[styles.menuLine, { width: 15, backgroundColor: colors.primary }]} />
+          <View style={[styles.menuLine, { backgroundColor: colors.primary }]} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>CHRONICLES</Text>
+        <Text style={[styles.headerTitle, { color: colors.primary }]}>CHRONICLES</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.calendarContainer}>
+        <View style={[styles.calendarContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.monthHeader}>
             <TouchableOpacity onPress={() => changeMonth(-1)}>
-              <Text style={styles.navText}>{'<'}</Text>
+              <Text style={[styles.navText, { color: colors.primary }]}>{'<'}</Text>
             </TouchableOpacity>
-            <Text style={styles.monthTitle}>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</Text>
+            <Text style={[styles.monthTitle, { color: colors.text }]}>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</Text>
             <TouchableOpacity onPress={() => changeMonth(1)}>
-              <Text style={styles.navText}>{'>'}</Text>
+              <Text style={[styles.navText, { color: colors.primary }]}>{'>'}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.weekdayRow}>
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-              <Text key={i} style={styles.weekdayText}>{day}</Text>
+              <Text key={i} style={[styles.weekdayText, { color: colors.textDim }]}>{day}</Text>
             ))}
           </View>
 
@@ -107,13 +111,13 @@ const CalendarScreen = ({ onOpenMenu }: CalendarScreenProps) => {
           </View>
         </View>
 
-        <View style={styles.legend}>
-          <Text style={styles.legendTitle}>QUEST ARCHIVE</Text>
+        <View style={[styles.legend, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.legendTitle, { color: colors.primary }]}>QUEST ARCHIVE</Text>
           <View style={styles.legendItems}>
             {(Object.keys(SKILL_COLORS) as Array<keyof typeof SKILL_COLORS>).map(skill => (
               <View key={skill} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: SKILL_COLORS[skill] }]} />
-                <Text style={styles.legendText}>{skill.toUpperCase()}</Text>
+                <Text style={[styles.legendText, { color: colors.textDim }]}>{skill.toUpperCase()}</Text>
               </View>
             ))}
           </View>
