@@ -19,7 +19,7 @@ const INITIAL_STATS: UserStats = {
   totalXp: 0,
   statPoints: 0,
   reputationTitle: 'E-RANK HUNTER',
-  lastResetDate: Date.now(),
+  lastResetDate: new Date().setHours(0,0,0,0),
   streakCount: 0,
   maxStreak: 0,
   shadowSoldiers: [],

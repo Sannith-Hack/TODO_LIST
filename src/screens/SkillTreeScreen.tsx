@@ -13,6 +13,8 @@ interface SkillTreeScreenProps {
 }
 
 const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenProps) => {
+  const theme = stats?.theme || 'dark';
+  const colors = getColors(theme);
 
   const handleSpendPoint = async (skillName: SkillType) => {
     if (!stats || stats.statPoints <= 0) {
@@ -111,55 +113,59 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
     attributes.vitality
   ].map(v => Math.min(v * 2, 100));
   const attrLabels = ['STR', 'AGI', 'INT', 'SEN', 'VIT'];
+  
+  const userRank = stats.reputationTitle.split('-')[0] || 'E';
+  const rankTheme = getRankTheme(userRank);
+  const primaryColor = rankTheme.primary;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.menuBtn} onPress={onOpenMenu}>
-          <View style={styles.menuLine} />
-          <View style={[styles.menuLine, { width: 15 }]} />
-          <View style={styles.menuLine} />
+          <View style={[styles.menuLine, { backgroundColor: primaryColor }]} />
+          <View style={[styles.menuLine, { width: 15, backgroundColor: primaryColor }]} />
+          <View style={[styles.menuLine, { backgroundColor: primaryColor }]} />
         </TouchableOpacity>
-        <Text style={styles.title}>STATUS WINDOW</Text>
+        <Text style={[styles.title, { color: primaryColor }]}>STATUS WINDOW</Text>
         <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.reputationHeader}>
-          <Text style={styles.reputationTitle}>{stats.reputationTitle}</Text>
-          <Text style={styles.playerName}>{stats.playerName.toUpperCase()}</Text>
-          <View style={styles.divider} />
+          <Text style={[styles.reputationTitle, { color: primaryColor }]}>{stats.reputationTitle}</Text>
+          <Text style={[styles.playerName, { color: colors.text }]}>{stats.playerName.toUpperCase()}</Text>
+          <View style={[styles.divider, { backgroundColor: primaryColor }]} />
         </View>
 
         <View style={styles.statusRow}>
             <View style={styles.chartSection}>
-            <RadarChart data={chartData} labels={attrLabels} />
+            <RadarChart data={chartData} labels={attrLabels} theme={theme} />
             </View>
             <View style={styles.overallStats}>
-                <View style={styles.statCircle}>
-                    <Text style={styles.levelLabel}>LEVEL</Text>
-                    <Text style={styles.levelValue}>{stats.totalLevel}</Text>
+                <View style={[styles.statCircle, { borderColor: primaryColor, backgroundColor: colors.surface }]}>
+                    <Text style={[styles.levelLabel, { color: colors.textDim }]}>LEVEL</Text>
+                    <Text style={[styles.levelValue, { color: colors.text }]}>{stats.totalLevel}</Text>
                 </View>
-                <View style={styles.streakBadge}>
-                    <Text style={styles.streakText}>🔥 {stats.streakCount || 0} DAY STREAK</Text>
+                <View style={[styles.streakBadge, { borderColor: colors.accent, backgroundColor: colors.accent + '22' }]}>
+                    <Text style={[styles.streakText, { color: colors.accent }]}>🔥 {stats.streakCount || 0} DAY STREAK</Text>
                 </View>
             </View>
         </View>
 
-        <View style={styles.statPointsBadge}>
-            <Text style={styles.statPointsText}>AVAILABLE STAT POINTS: {stats.statPoints}</Text>
+        <View style={[styles.statPointsBadge, { borderColor: primaryColor, backgroundColor: primaryColor + '22' }]}>
+            <Text style={[styles.statPointsText, { color: primaryColor }]}>AVAILABLE STAT POINTS: {stats.statPoints}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>ATTRIBUTES</Text>
-        <View style={styles.attributesContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>ATTRIBUTES</Text>
+        <View style={[styles.attributesContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             {(Object.keys(attributes) as Array<keyof UserStats['attributes']>).map((attr) => (
                 <View key={attr} style={styles.attrRow}>
-                    <Text style={styles.attrLabel}>{attr.toUpperCase()}</Text>
+                    <Text style={[styles.attrLabel, { color: colors.textDim }]}>{attr.toUpperCase()}</Text>
                     <View style={styles.attrValueContainer}>
-                        <Text style={styles.attrValue}>{attributes[attr]}</Text>
+                        <Text style={[styles.attrValue, { color: primaryColor }]}>{attributes[attr]}</Text>
                         {stats.statPoints > 0 && (
-                            <TouchableOpacity onPress={() => handleSpendAttribute(attr)} style={styles.attrPlusBtn}>
-                                <Text style={styles.attrPlusText}>+</Text>
+                            <TouchableOpacity onPress={() => handleSpendAttribute(attr)} style={[styles.attrPlusBtn, { backgroundColor: primaryColor }]}>
+                                <Text style={[styles.attrPlusText, { color: colors.background }]}>+</Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -170,11 +176,11 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
 
         {stats.shadowSoldiers && stats.shadowSoldiers.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>SHADOW ARMY</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>SHADOW ARMY</Text>
             <View style={styles.shadowSoldiersContainer}>
                 {stats.shadowSoldiers.map(s => (
-                    <View key={s} style={styles.shadowBadge}>
-                        <Text style={styles.shadowText}>{s}</Text>
+                    <View key={s} style={[styles.shadowBadge, { borderColor: primaryColor, backgroundColor: colors.surface }]}>
+                        <Text style={[styles.shadowText, { color: primaryColor }]}>{s}</Text>
                     </View>
                 ))}
             </View>
@@ -183,18 +189,18 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
 
         {stats.achievements && stats.achievements.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>ACHIEVEMENTS</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>ACHIEVEMENTS</Text>
             <View style={styles.achievementsContainer}>
                 {stats.achievements.map(a => (
-                    <View key={a} style={styles.achievementBadge}>
-                        <Text style={styles.achievementText}>🏆 {a.replace('_', ' ')}</Text>
+                    <View key={a} style={[styles.achievementBadge, { borderColor: colors.success, backgroundColor: colors.surface }]}>
+                        <Text style={[styles.achievementText, { color: colors.success }]}>🏆 {a.replace('_', ' ')}</Text>
                     </View>
                 ))}
             </View>
           </>
         )}
 
-        <Text style={styles.sectionTitle}>SKILL TREES</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>SKILL TREES</Text>
 
         {skillOrder.map((skillName) => {
           const skill = stats.skills[skillName];
@@ -202,7 +208,7 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
           const color = SKILL_COLORS[skillName];
 
           return (
-            <View key={skillName} style={styles.skillCard}>
+            <View key={skillName} style={[styles.skillCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.skillHeader}>
                 <Text style={[styles.skillName, { color }]}>{skillName.toUpperCase()}</Text>
                 <View style={styles.rankRow}>
@@ -211,17 +217,17 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
                   </View>
                   {stats.statPoints > 0 && (
                     <TouchableOpacity onPress={() => handleSpendPoint(skillName)} style={[styles.plusBtn, { backgroundColor: color }]}>
-                      <Text style={styles.plusBtnText}>+</Text>
+                      <Text style={[styles.plusBtnText, { color: colors.background }]}>+</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               </View>
               <View style={styles.skillInfo}>
-                <Text style={styles.skillLevel}>Lv. {skill.level}</Text>
-                <Text style={styles.skillXp}>{skill.xp} / {skill.requiredXp} XP</Text>
+                <Text style={[styles.skillLevel, { color: colors.text }]}>Lv. {skill.level}</Text>
+                <Text style={[styles.skillXp, { color: colors.textDim }]}>{skill.xp} / {skill.requiredXp} XP</Text>
               </View>
-              <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBar, { width: `${progress}%`, backgroundColor: color }, SHADOWS.glowCustom(color)]} />
+              <View style={[styles.progressBarContainer, { backgroundColor: colors.background }]}>
+                <View style={[styles.progressBar, { width: `${progress}%`, backgroundColor: color }]} />
               </View>
             </View>
           );

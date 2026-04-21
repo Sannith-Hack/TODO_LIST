@@ -156,11 +156,15 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
         const missedDailies = currentTasks.filter(t => t.category === 'Regular' && !t.completed && (!t.frequency || t.frequency === 'Daily'));
         
         // Streak Logic: Check if all dailies were completed yesterday
-        // Only if there were dailies to complete
+        // Yesterday is defined as anything between lastResetDay and today
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const isYesterday = today === lastResetDay + oneDayMs;
+        
         const hadDailiesYesterday = currentTasks.some(t => t.category === 'Regular' && (!t.frequency || t.frequency === 'Daily'));
-        if (hadDailiesYesterday && missedDailies.length === 0) {
-          updatedStats.streakCount += 1;
-          if (updatedStats.streakCount > updatedStats.maxStreak) {
+        
+        if (isYesterday && hadDailiesYesterday && missedDailies.length === 0) {
+          updatedStats.streakCount = (updatedStats.streakCount || 0) + 1;
+          if (updatedStats.streakCount > (updatedStats.maxStreak || 0)) {
             updatedStats.maxStreak = updatedStats.streakCount;
           }
           
@@ -181,8 +185,9 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
             Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: BERU (30-Day Streak)');
           }
           updatedStats.shadowSoldiers = soldiers;
-        } else if (hadDailiesYesterday && missedDailies.length > 0) {
-          updatedStats.streakCount = 0; // Reset streak if any daily missed
+        } else if (!isYesterday || (hadDailiesYesterday && missedDailies.length > 0)) {
+          // If they missed more than one day, reset to 0 OR if they missed a daily yesterday
+          updatedStats.streakCount = 0; 
         }
 
         if (missedDailies.length > 0) {
