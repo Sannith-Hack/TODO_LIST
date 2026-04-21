@@ -94,12 +94,21 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
   if (!stats) return null;
 
   const skillOrder: SkillType[] = ['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'];
+  
+  const attributes = stats.attributes || {
+    strength: 10,
+    agility: 10,
+    intelligence: 10,
+    sense: 10,
+    vitality: 10,
+  };
+
   const chartData = [
-    stats.attributes.strength,
-    stats.attributes.agility,
-    stats.attributes.intelligence,
-    stats.attributes.sense,
-    stats.attributes.vitality
+    attributes.strength,
+    attributes.agility,
+    attributes.intelligence,
+    attributes.sense,
+    attributes.vitality
   ].map(v => Math.min(v * 2, 100));
   const attrLabels = ['STR', 'AGI', 'INT', 'SEN', 'VIT'];
 
@@ -132,7 +141,7 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
                     <Text style={styles.levelValue}>{stats.totalLevel}</Text>
                 </View>
                 <View style={styles.streakBadge}>
-                    <Text style={styles.streakText}>🔥 {stats.streakCount} DAY STREAK</Text>
+                    <Text style={styles.streakText}>🔥 {stats.streakCount || 0} DAY STREAK</Text>
                 </View>
             </View>
         </View>
@@ -143,11 +152,11 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
 
         <Text style={styles.sectionTitle}>ATTRIBUTES</Text>
         <View style={styles.attributesContainer}>
-            {(Object.keys(stats.attributes) as Array<keyof UserStats['attributes']>).map((attr) => (
+            {(Object.keys(attributes) as Array<keyof UserStats['attributes']>).map((attr) => (
                 <View key={attr} style={styles.attrRow}>
                     <Text style={styles.attrLabel}>{attr.toUpperCase()}</Text>
                     <View style={styles.attrValueContainer}>
-                        <Text style={styles.attrValue}>{stats.attributes[attr]}</Text>
+                        <Text style={styles.attrValue}>{attributes[attr]}</Text>
                         {stats.statPoints > 0 && (
                             <TouchableOpacity onPress={() => handleSpendAttribute(attr)} style={styles.attrPlusBtn}>
                                 <Text style={styles.attrPlusText}>+</Text>
@@ -157,6 +166,7 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
                 </View>
             ))}
         </View>
+
 
         {stats.shadowSoldiers && stats.shadowSoldiers.length > 0 && (
           <>

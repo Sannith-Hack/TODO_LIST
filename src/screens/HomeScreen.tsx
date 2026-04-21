@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform, LayoutAnimation, UIManager } from 'react-native';
-import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS, getRankTheme } from '../utils/theme';
+import { COLORS, getColors, SHADOWS, SKILL_COLORS, CATEGORY_COLORS, getRankTheme } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats, TaskFrequency } from '../utils/types';
 import { saveTasks, loadTasks, saveStats, calculateLevelUp, getTitleByLevel, addToHistory } from '../storage/taskStorage';
 import { QUEST_TEMPLATES } from '../utils/templates';
@@ -438,8 +438,8 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={onOpenMenu}><Text style={[styles.menuText, { color: primaryColor }]}>MENU</Text></TouchableOpacity>
             <Text style={[styles.title, { color: primaryColor }]}>QUEST LOG</Text>
             <View style={{width: 40}} />
@@ -449,6 +449,7 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
             keyExtractor={t => t.id}
             renderItem={({ item }) => <TaskItem 
               item={item} onToggle={toggleTask} 
+              theme={theme}
               onDelete={(id) => {
                 setDeletingTask({ id, x: 100, y: 300, color: SKILL_COLORS[item.skillType] || primaryColor });
                 setTimeout(() => {
@@ -470,6 +471,7 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
               taskInput={taskInput} setTaskInput={setTaskInput} targetCount={targetCount} setTargetCount={setTargetCount} primaryColor={primaryColor} 
               frequency={frequency} setFrequency={setFrequency} recurringDays={recurringDays} setRecurringDays={setRecurringDays}
               searchQuery={searchQuery} setSearchQuery={setSearchQuery} isArchiveVisible={isArchiveVisible} setIsArchiveVisible={setIsArchiveVisible} 
+              theme={theme}
             />}
         />
         {deletingTask && (
@@ -477,12 +479,12 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
         )}
         <Modal visible={isTemplatePickerVisible} transparent animationType="fade" onRequestClose={() => setIsTemplatePickerVisible(false)}>
             <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setIsTemplatePickerVisible(false)}>
-                <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>PRESETS</Text>
+                <View style={[styles.modalContent, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }]}>
+                    <Text style={[styles.modalTitle, { color: colors.primary }]}>PRESETS</Text>
                     <ScrollView>
                         {QUEST_TEMPLATES[selectedSkill].map((t) => (
-                            <TouchableOpacity key={t.id} style={styles.templateItem} onPress={() => { setTaskInput(t.name); setTargetCount(t.targetCount?.toString() || ''); setSelectedCategory(t.category); setIsTemplatePickerVisible(false); triggerHaptic('impactMedium'); }}>
-                                <Text style={styles.templateName}>{t.name}</Text>
+                            <TouchableOpacity key={t.id} style={[styles.templateItem, { borderBottomColor: colors.border }]} onPress={() => { setTaskInput(t.name); setTargetCount(t.targetCount?.toString() || ''); setSelectedCategory(t.category); setIsTemplatePickerVisible(false); triggerHaptic('impactMedium'); }}>
+                                <Text style={[styles.templateName, { color: colors.text }]}>{t.name}</Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
