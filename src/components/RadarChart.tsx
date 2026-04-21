@@ -1,18 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '../utils/theme';
+import { getColors } from '../utils/theme';
 
 interface RadarChartProps {
   data: number[];
   labels: string[];
+  theme?: 'dark' | 'light';
 }
 
-const RadarChart = ({ data, labels }: RadarChartProps) => {
+const RadarChart = ({ data, labels, theme = 'dark' }: RadarChartProps) => {
+  const colors = getColors(theme);
+
   return (
     <View style={styles.container}>
-      <View style={styles.placeholder}>
-        <Text style={styles.text}>SYSTEM CHART ACTIVE</Text>
-        <Text style={styles.subtext}>STABILITY MODE</Text>
+      <View style={[styles.placeholder, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
+        <Text style={[styles.text, { color: colors.primary }]}>SYSTEM CHART ACTIVE</Text>
+        <Text style={[styles.subtext, { color: colors.textDim }]}>STABILITY MODE</Text>
       </View>
     </View>
   );
@@ -29,18 +32,14 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 100,
     borderWidth: 2,
-    borderColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.surface,
   },
   text: {
-    color: COLORS.primary,
     fontSize: 12,
     fontWeight: 'bold',
   },
   subtext: {
-    color: COLORS.textDim,
     fontSize: 8,
     marginTop: 4,
   }

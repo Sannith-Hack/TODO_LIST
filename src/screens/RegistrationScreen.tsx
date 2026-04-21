@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Animated, Dimensions, SafeAreaView, Alert } from 'react-native';
-import { COLORS, SHADOWS } from '../utils/theme';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Animated, Dimensions, SafeAreaView, Alert, StatusBar } from 'react-native';
+import { COLORS, getColors, SHADOWS } from '../utils/theme';
 import { loadStats, saveStats } from '../storage/taskStorage';
 
 interface RegistrationScreenProps {
   onComplete: () => void;
+  theme?: 'dark' | 'light';
 }
 
-const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
+const RegistrationScreen = ({ onComplete, theme = 'dark' }: RegistrationScreenProps) => {
   const [name, setName] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
+  
+  const colors = getColors(theme);
 
   useEffect(() => {
     Animated.parallel([
@@ -43,43 +46,44 @@ const RegistrationScreen = ({ onComplete }: RegistrationScreenProps) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <Animated.View style={[
         styles.content,
         { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
       ]}>
         <View style={styles.header}>
-          <Text style={styles.subtitle}>SYSTEM AUTHORIZATION</Text>
-          <Text style={styles.title}>PLAYER REGISTRATION</Text>
+          <Text style={[styles.subtitle, { color: colors.primary }]}>SYSTEM AUTHORIZATION</Text>
+          <Text style={[styles.title, { color: colors.text }]}>PLAYER REGISTRATION</Text>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>ENTER PLAYER NAME</Text>
+          <Text style={[styles.label, { color: colors.textDim }]}>ENTER PLAYER NAME</Text>
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.primary, color: colors.text }]}
               placeholder="YOUR NAME"
-              placeholderTextColor={COLORS.textDim}
+              placeholderTextColor={colors.textDim}
               value={name}
               onChangeText={setName}
               autoCapitalize="characters"
               autoFocus
             />
-            <View style={styles.inputGlow} />
+            <View style={[styles.inputGlow, { borderColor: colors.primary }]} />
           </View>
 
-          <Text style={styles.disclaimer}>
+          <Text style={[styles.disclaimer, { color: colors.textDim }]}>
             * This name will be recorded in the System's eternal log. Choose wisely.
           </Text>
 
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>AUTHORIZE ACCESS</Text>
+          <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleRegister}>
+            <Text style={[styles.buttonText, { color: colors.background }]}>AUTHORIZE ACCESS</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>QUEST LOG PROTOCOL v1.0.5</Text>
+        <Text style={[styles.footerText, { color: colors.textDim }]}>QUEST LOG PROTOCOL v1.0.7</Text>
       </View>
     </SafeAreaView>
   );

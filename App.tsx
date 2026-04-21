@@ -47,7 +47,7 @@ const App = () => {
     return (
       <>
         <StatusBar barStyle={theme === 'dark' ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-        <LoadingScreen onFinish={() => setIsLoading(false)} />
+        <LoadingScreen onFinish={() => setIsLoading(false)} theme={theme} />
       </>
     );
   }
@@ -59,7 +59,7 @@ const App = () => {
         <RegistrationScreen onComplete={() => {
           setNeedsRegistration(false);
           fetchStats();
-        }} />
+        }} theme={theme} />
       </>
     );
   }
@@ -68,16 +68,17 @@ const App = () => {
     const commonProps = {
       onOpenMenu: () => setIsSidebarOpen(true),
       stats: stats,
-      refreshStats: fetchStats
+      refreshStats: fetchStats,
+      theme: theme
     };
 
     switch (currentScreen) {
       case 'Home': return <HomeScreen {...commonProps} />;
       case 'SkillTree': return <SkillTreeScreen {...commonProps} />;
       case 'Testing': return <TestingScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
-      case 'Calendar': return <CalendarScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
+      case 'Calendar': return <CalendarScreen onOpenMenu={() => setIsSidebarOpen(true)} stats={stats} />;
       case 'Settings': return <SettingsScreen {...commonProps} />;
-      case 'Memo': return <MemoScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
+      case 'Memo': return <MemoScreen onOpenMenu={() => setIsSidebarOpen(true)} stats={stats} />;
       case 'HunterReport': return <HunterReportScreen {...commonProps} />;
       default: return <HomeScreen {...commonProps} />;
     }

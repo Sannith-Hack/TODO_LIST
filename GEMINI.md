@@ -38,33 +38,33 @@ A production-quality To-Do List mobile application built with **React Native CLI
 - **`src/storage/`**: `taskStorage.ts` (Includes last-used settings logic and data clearing)
 - **`src/utils/`**: `templates.ts`, `theme.ts`, `types.ts`, `notifications.ts`, `feedback.ts` (Haptics/Audio)
 
-## ✅ Build Status (April 21, 2026) - **STABLE**
+## ✅ Build Status (April 21, 2026 - v1.0.7) - **STABLE**
 
 ### Core Features Implemented
 1. ✅ **System Navigation**: Animated Sidebar (Glitch Effect).
 2. ✅ **Quest Log**: Fully scrollable, sectioned list for Daily, One-Time, and Long-Term Quests.
 3. ✅ **Player Registration**: Initial, one-time setup for user personalization.
 4. ✅ **Skill & XP System**: 5 Skill Trees with functional XP gain and Leveling logic.
-5. ✅ **Status Window**: Visual "System" UI with a crash-proof Stats Radar Chart.
-6. ✅ **Memo Pad**: Dedicated screen for non-RPG, real-world tasks.
-7. ✅ **System Chronicles**: Calendar view for tracking completion history.
-8. ✅ **Penalty System**: Auto-detects missed daily quests and issues penalties.
+5. ✅ **Status Window**: Manual Attribute Point allocation (STR, AGI, INT, SEN, VIT) with real-time Radar Chart.
+6. ✅ **Shadow Streak System**: Tracks daily quest protocols with XP multipliers (up to 2x) and Shadow Army extractions (Igris, Tank, Iron, Beru).
+7. ✅ **Hunter's Report**: Advanced Growth Analytics with a custom-built SVG XP chart (30-day view).
+8. ✅ **Memo Pad**: Dedicated screen for non-RPG, real-world tasks with search and archive.
+9. ✅ **System Chronicles**: Calendar view for tracking completion history.
+10. ✅ **Penalty System**: Auto-detects missed daily quests and issues penalties.
 
 ### Recent Enhancements & UI/UX
-1. ✅ **Auto-Sorting**: Completed quests and memos automatically move to the bottom of the list.
-2. ✅ **Smooth Transitions**: Integrated `LayoutAnimation` for fluid reordering and state updates.
-3. ✅ **Tactile Feedback**: Haptic feedback (Impact/Notification) added to all major system interactions.
-4. ✅ **Audio Integration**: System-themed SFX for Quest Completion and Level Up events.
-5. ✅ **Level Up Protocol**: Integrated `LevelUpModal` with XP calculations in the Quest Log.
-6. ✅ **Keyboard Stability**: Input fields are now stable and do not lose focus.
-7. ✅ **Advanced Task Management**:
-    *   **Sub-Quests**: Multi-step checklists for Long-Term goals.
-    *   **Smart Patterns**: Selection for Daily, Weekly, or Custom recurring cycles with intelligent period-aware resets.
-    *   **Search & Archive/Unarchive**: Real-time filtering and full lifecycle management (Archive/Restore) for Quest Log and Memo Pad.
-8. ✅ **Visual Evolution**: Rank-based dynamic theme (colors/glows evolve from E-Rank Blue to S-Rank Gold).
-9. ✅ **Particle System**: Quest deletion triggers a high-end "shatter" particle effect using Reanimated.
-10. ✅ **Global State Synchronization**: Centralized stats management ensures real-time XP/Level updates across all screens.
-11. ✅ **System Stability**: Optimized build environment by removing redundant heavy libraries and enforcing stable architecture modes.
+1. ✅ **Dual-Theme Protocol**: Integrated "System: Dark" and "System: White" modes for environmental visibility.
+2. ✅ **Manual Stats**: 3 Stat Points granted per level for customized player builds.
+3. ✅ **Achievement System**: Behavior-based titles (e.g., "Early Riser", "Iron Body") with UI badges.
+4. ✅ **Visual Evolution**: Rank-based dynamic theme (colors/glows evolve from E-Rank Blue to S-Rank Gold).
+5. ✅ **Tactile Feedback**: Haptic feedback and System-themed SFX for Quest Completion and Level Up events.
+6. ✅ **Advanced Task Management**: Sub-Quests, Smart Patterns (Weekly/Custom), and real-time Search/Filter.
+7. ✅ **Particle System**: High-end "shatter" particle effect using Reanimated on quest deletion.
+8. ✅ **System Stability**: 
+    *   **Removed** redundant `react-native-svg-charts` library to fix "undefined property" crashes.
+    *   **Implemented** a custom, lightweight SVG Growth Analytics engine.
+    *   **Applied** robust data fallbacks for legacy player stats to prevent startup failures.
+9. ✅ **Global State Synchronization**: Centralized stats management ensures real-time XP/Level updates across all screens.
 
 ## 🎯 Next Steps (Optional Enhancements)
 1. Build a detailed quest view for task logs and descriptions.

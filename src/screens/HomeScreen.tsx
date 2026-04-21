@@ -491,45 +491,43 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
                 </View>
             </TouchableOpacity>
         </Modal>
-        {levelUpData && <LevelUpModal level={levelUpData.level} onClose={() => setLevelUpData(null)} />}
+        {levelUpData && <LevelUpModal level={levelUpData.level} onClose={() => setLevelUpData(null)} theme={theme} />}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1 },
   header: { padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: COLORS.primary, fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  menuText: { color: COLORS.primary, fontWeight: 'bold' },
+  title: { fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  menuText: { fontWeight: 'bold' },
   creationPanel: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 },
   creationHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  selectorItem: { paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: COLORS.border, marginRight: 8, backgroundColor: COLORS.surface },
-  selectorText: { color: COLORS.textDim, fontSize: 10, fontWeight: 'bold' },
-  templateToggle: { paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.primary + '11' },
-  templateToggleText: { color: COLORS.primary, fontSize: 10, fontWeight: 'bold' },
+  selectorItem: { paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, marginRight: 8 },
+  selectorText: { fontSize: 10, fontWeight: 'bold' },
+  templateToggle: { paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1 },
+  templateToggleText: { fontSize: 10, fontWeight: 'bold' },
   categorySelectorContainer: { flexDirection: 'row', marginBottom: 10 },
-  categoryItem: { flex: 1, padding: 8, borderWidth: 1, borderColor: COLORS.border, marginRight: 5, alignItems: 'center' },
-  categoryText: { fontSize: 9, fontWeight: 'bold', color: COLORS.textDim },
+  categoryItem: { flex: 1, padding: 8, borderWidth: 1, marginRight: 5, alignItems: 'center' },
+  categoryText: { fontSize: 9, fontWeight: 'bold' },
   scheduleContainer: { flexDirection: 'row', marginBottom: 10 },
-  scheduleLabel: { color: COLORS.primary, fontSize: 10, alignSelf: 'center', marginRight: 10 },
-  offsetItem: { padding: 8, borderWidth: 1, borderColor: COLORS.border, marginRight: 5 },
-  offsetItemActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '22' },
-  offsetText: { color: COLORS.textDim, fontSize: 10 },
-  offsetTextActive: { color: COLORS.primary, fontWeight: 'bold' },
+  scheduleLabel: { fontSize: 10, alignSelf: 'center', marginRight: 10 },
+  offsetItem: { padding: 8, borderWidth: 1, marginRight: 5 },
+  offsetText: { fontSize: 10 },
   inputRow: { flexDirection: 'row', alignItems: 'center' },
-  input: { flex: 1, backgroundColor: COLORS.surface, color: COLORS.text, paddingHorizontal: 15, height: 40 },
-  addButton: { paddingHorizontal: 15, height: 40, justifyContent: 'center', backgroundColor: COLORS.primary, marginLeft: 10 },
-  addButtonText: { color: COLORS.background, fontWeight: '900', fontSize: 11 },
-  smallInput: { width: 50, height: 35, backgroundColor: COLORS.surface, color: COLORS.text, paddingHorizontal: 5, fontSize: 10, borderWidth: 1, marginLeft: 10, textAlign: 'center' },
+  input: { flex: 1, paddingHorizontal: 15, height: 40 },
+  addButton: { paddingHorizontal: 15, height: 40, justifyContent: 'center', marginLeft: 10 },
+  addButtonText: { fontWeight: '900', fontSize: 11 },
+  smallInput: { width: 50, height: 35, paddingHorizontal: 5, fontSize: 10, borderWidth: 1, marginLeft: 10, textAlign: 'center' },
   searchRow: { flexDirection: 'row', marginBottom: 15, alignItems: 'center' },
-  searchInput: { flex: 1, backgroundColor: COLORS.surface, color: COLORS.text, height: 35, paddingHorizontal: 15, fontSize: 11, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  archiveToggle: { marginLeft: 10, paddingHorizontal: 10, height: 35, justifyContent: 'center', borderWidth: 1, borderColor: COLORS.border },
-  archiveToggleText: { color: COLORS.textDim, fontSize: 9, fontWeight: 'bold' },
+  searchInput: { flex: 1, height: 35, paddingHorizontal: 15, fontSize: 11, borderBottomWidth: 1 },
+  archiveToggle: { marginLeft: 10, paddingHorizontal: 10, height: 35, justifyContent: 'center', borderWidth: 1 },
+  archiveToggleText: { fontSize: 9, fontWeight: 'bold' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 40 },
-  modalContent: { backgroundColor: COLORS.surface, padding: 20, width: '100%' },
-  modalTitle: { color: COLORS.primary, fontWeight: 'bold', marginBottom: 10 },
-  templateItem: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  templateName: { color: COLORS.text }
+  modalContent: { padding: 20, width: '100%' },
+  modalTitle: { fontWeight: 'bold', marginBottom: 10 },
+  templateItem: { paddingVertical: 15, borderBottomWidth: 1 },
+  templateName: { }
 });
 
 export default HomeScreen;

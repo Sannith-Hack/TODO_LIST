@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
-import { COLORS, SHADOWS } from '../utils/theme';
+import { View, Text, StyleSheet, Animated, Easing, StatusBar } from 'react-native';
+import { COLORS, getColors, SHADOWS } from '../utils/theme';
 
-const LoadingScreen = ({ onFinish }: { onFinish: () => void }) => {
+const LoadingScreen = ({ onFinish, theme = 'dark' }: { onFinish: () => void, theme?: 'dark' | 'light' }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
+  
+  const colors = getColors(theme);
 
   useEffect(() => {
     // Fade in text
@@ -36,16 +38,17 @@ const LoadingScreen = ({ onFinish }: { onFinish: () => void }) => {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={styles.systemNotice}>[SYSTEM NOTICE]</Text>
-        <Text style={styles.quote}>
+        <Text style={[styles.systemNotice, { color: colors.primary }]}>[SYSTEM NOTICE]</Text>
+        <Text style={[styles.quote, { color: colors.text, textShadowColor: colors.primary }]}>
           "THE SYSTEM HAS SELECTED A PLAYER."
         </Text>
-        <View style={styles.loadingBarContainer}>
-          <Animated.View style={[styles.loadingProgress, { width }, SHADOWS.glow]} />
+        <View style={[styles.loadingBarContainer, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+          <Animated.View style={[styles.loadingProgress, { width, backgroundColor: colors.primary }]} />
         </View>
-        <Text style={styles.loadingText}>INITIALIZING STATUS WINDOW...</Text>
+        <Text style={[styles.loadingText, { color: colors.textDim }]}>INITIALIZING STATUS WINDOW...</Text>
       </Animated.View>
     </View>
   );
