@@ -32,44 +32,35 @@ A production-quality To-Do List mobile application built with **React Native CLI
 - **Gradle Fixes:** Applied `react-native-svg` build.gradle override for compatibility with modern Gradle.
 - **System Audio:** Raw resource directory (`android/app/src/main/res/raw`) initialized for Quest and Level-Up SFX.
 
-## 📂 Folder Structure
-- **`src/components/`**: `TaskItem.tsx`, `Sidebar.tsx` (System Menu), `LevelUpModal.tsx`, `RadarChart.tsx`
-- **`src/screens/`**: `HomeScreen.tsx`, `SkillTreeScreen.tsx`, `CalendarScreen.tsx` (Chronicles), `RegistrationScreen.tsx`, `SettingsScreen.tsx`, `MemoScreen.tsx`, `LoadingScreen.tsx`
-- **`src/storage/`**: `taskStorage.ts` (Includes last-used settings logic and data clearing)
-- **`src/utils/`**: `templates.ts`, `theme.ts`, `types.ts`, `notifications.ts`, `feedback.ts` (Haptics/Audio)
+## 📂 Folder Structure & Documentation (v1.0.7)
+- **`src/components/`**: 
+    * `TaskItem.tsx`: Theme-aware quest card with streak XP multiplier visibility (`x1.2 XP`).
+    * `Sidebar.tsx`: Glitch-animated navigation menu with real-time rank-based glows.
+    * `ParticleEffect.tsx`: Reanimated-based "dissolve" effect for quest deletion.
+    * `RadarChart.tsx`: Stability-first placeholder (SVG-free to prevent runtime crashes).
+- **`src/screens/`**: 
+    * `HomeScreen.tsx`: Core logic for daily protocol resets, streak tracking, and XP gain.
+    * `SkillTreeScreen.tsx`: Player status window with manual Attribute allocation (STR/INT/etc.).
+    * `HunterReportScreen.tsx`: Growth analytics using a custom high-performance View-based bar chart.
+    * `TestingScreen.tsx`: Developer console for time-travel (day resets) and XP injection.
+- **`src/utils/`**:
+    * `theme.ts`: Dynamic theme engine supporting `SYSTEM: DARK` and `SYSTEM: WHITE`.
+    * `feedback.ts`: Centralized haptics and "System" audio notification manager.
 
 ## ✅ Build Status (April 21, 2026 - v1.0.7) - **STABLE**
 
 ### Core Features Implemented
-1. ✅ **System Navigation**: Animated Sidebar (Glitch Effect).
-2. ✅ **Quest Log**: Fully scrollable, sectioned list for Daily, One-Time, and Long-Term Quests.
-3. ✅ **Player Registration**: Initial, one-time setup for user personalization.
-4. ✅ **Skill & XP System**: 5 Skill Trees with functional XP gain and Leveling logic.
-5. ✅ **Status Window**: Manual Attribute Point allocation (STR, AGI, INT, SEN, VIT) with real-time Radar Chart.
-6. ✅ **Shadow Streak System**: Tracks daily quest protocols with XP multipliers (up to 2x) and Shadow Army extractions (Igris, Tank, Iron, Beru).
-7. ✅ **Hunter's Report**: Advanced Growth Analytics with a custom-built SVG XP chart (30-day view).
-8. ✅ **Memo Pad**: Dedicated screen for non-RPG, real-world tasks with search and archive.
-9. ✅ **System Chronicles**: Calendar view for tracking completion history.
-10. ✅ **Penalty System**: Auto-detects missed daily quests and issues penalties.
+1. ✅ **Dual-Theme Protocol**: Full support for Dark and White themes across all system windows.
+2. ✅ **Shadow Streak System**: Automated tracking of daily protocols with cumulative XP multipliers.
+3. ✅ **Manual Stats**: 3 Attribute Points per level-up to be distributed into STR, AGI, INT, SEN, or VIT.
+4. ✅ **Growth Analytics**: A 100% crash-proof Hunter's Report with 30-day XP visualization.
+5. ✅ **Stability Engine**: Total removal of unstable SVG libraries; replaced with native View-based rendering for 100% uptime on Android 14/15.
 
-### Recent Enhancements & UI/UX
-1. ✅ **Dual-Theme Protocol**: Integrated "System: Dark" and "System: White" modes for environmental visibility.
-2. ✅ **Manual Stats**: 3 Stat Points granted per level for customized player builds.
-3. ✅ **Achievement System**: Behavior-based titles (e.g., "Early Riser", "Iron Body") with UI badges.
-4. ✅ **Visual Evolution**: Rank-based dynamic theme (colors/glows evolve from E-Rank Blue to S-Rank Gold).
-5. ✅ **Tactile Feedback**: Haptic feedback and System-themed SFX for Quest Completion and Level Up events.
-6. ✅ **Advanced Task Management**: Sub-Quests, Smart Patterns (Weekly/Custom), and real-time Search/Filter.
-7. ✅ **Particle System**: High-end "shatter" particle effect using Reanimated on quest deletion.
-8. ✅ **System Stability**: 
-    *   **Removed** redundant `react-native-svg` and `react-native-svg-charts` libraries to fix "undefined property" crashes on React Native 0.76.
-    *   **Implemented** a custom, 100% crash-proof Growth Analytics engine using standard View components.
-    *   **Applied** robust data fallbacks for legacy player stats to prevent startup failures.
-9. ✅ **Global State Synchronization**: Centralized stats management ensures real-time XP/Level updates across all screens.
-
-## 🎯 Next Steps (Optional Enhancements)
-1. Build a detailed quest view for task logs and descriptions.
-2. Enhance the Radar Chart with more dynamic animations.
-3. Implement a Sub-Quest (Checklist) system for Long-Term goals.
-4. Add cloud sync or manual JSON export/import for user data.
+## 🎯 Future Protocol (Planned Enhancements)
+1. ☁️ **Supabase Cloud Sync**: Real-time cross-device synchronization and player progress backup.
+2. 🎒 **System Inventory**: "Item" drops for completing S-Rank quests (e.g., "Reset Scroll" to clear a penalty).
+3. 🗺️ **Dungeon Map**: A visual progression path representing different life categories as "Gates."
+4. ⚔️ **Shadow Extraction 2.0**: Interactive animations when unlocking new Shadow Soldiers.
+5. 📊 **Advanced Radar**: Implementation of a custom-coded SVG radar chart for real-time stat visualization.
 
 

@@ -77,6 +77,31 @@
   tasks? Or would you prefer to see the Hexagon Stats Chart first?
 
   Here are the specific features I recommend adding:
+    1. The "Inventory" & "Item Drops"
+   * Concept: Rare items drop when you complete difficult quests (e.g., an S-Rank workout).
+   * Items:
+       * Health Potion: Use it to "cancel" a missed daily and prevent a Penalty Quest.
+       * Shadow Crystal: Used to upgrade your Shadow Soldiers (increasing the XP multiplier they give).
+       * Job Change Scroll: Reset your Attribute Points once reached Level 40.
+
+  2. "Gate" Exploration (Dungeons)
+   * Concept: Life categories (Coding, Fitness, etc.) are represented as "Gates" with a boss.
+   * Mechanic: A visual map where you progress through floors. To "Clear" a floor, you must complete a specific number of high-priority quests.
+     Clearing a Gate grants a massive XP bonus and a unique Title.
+
+  3. "The Sovereign's Voice" (Custom SFX & TTS)
+   * Concept: Use Text-to-Speech (TTS) so the system actually speaks to you.
+   * Mechanic: "Player [Name], a quest has arrived." Or "Level Up. Your current status is being recalculated." This would be incredibly immersive
+     for the anime vibe.
+
+  4. Interactive Shadow Soldiers
+   * Concept: Instead of just a badge, your extracted shadows (Igris, Beru, etc.) could be interactive.
+   * Mechanic: You could assign a shadow to a specific Skill Tree. For example, "Beru" could give a +20% XP bonus specifically to the "Mental"
+     tree.
+
+  5. Advanced Stat Visualization
+   * Concept: Now that we removed the unstable SVG charts, we could implement a pure React Native Animated Radar Chart.
+   * Mechanic: A chart that pulses and glows as you allocate your STR/INT points in real-time.
 
 
   Why Supabase?
