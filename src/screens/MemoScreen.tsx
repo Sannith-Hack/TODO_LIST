@@ -63,6 +63,11 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
     triggerHaptic('impactMedium');
   };
 
+  const unarchiveMemo = (id: string) => {
+    saveMemos(memos.map(m => m.id === id ? { ...m, isArchived: false } : m));
+    triggerHaptic('impactMedium');
+  };
+
   const filteredMemos = memos.filter(m => {
     const matchesSearch = m.text.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesArchive = isArchiveVisible ? m.isArchived : !m.isArchived;
@@ -112,7 +117,11 @@ const MemoScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
             </TouchableOpacity>
             <Text style={[styles.memoText, item.completed && styles.memoCompleted]}>{item.text}</Text>
             <View style={styles.memoActions}>
-              {item.completed && !item.isArchived && (
+              {item.isArchived ? (
+                <TouchableOpacity onPress={() => unarchiveMemo(item.id)} style={{marginRight: 15}}>
+                  <Text style={styles.unarchiveText}>UN-ARC</Text>
+                </TouchableOpacity>
+              ) : item.completed && (
                 <TouchableOpacity onPress={() => archiveMemo(item.id)} style={{marginRight: 15}}>
                   <Text style={styles.archiveText}>ARC</Text>
                 </TouchableOpacity>
@@ -164,6 +173,7 @@ const styles = StyleSheet.create({
   memoCompleted: { textDecorationLine: 'line-through', color: COLORS.textDim },
   memoActions: { flexDirection: 'row', alignItems: 'center' },
   archiveText: { color: COLORS.accent, fontWeight: 'bold', fontSize: 10 },
+  unarchiveText: { color: COLORS.success, fontWeight: 'bold', fontSize: 10 },
   deleteText: { color: COLORS.danger, fontWeight: 'bold', fontSize: 10 },
   inputRow: { flexDirection: 'row', padding: 20, backgroundColor: COLORS.surface },
   input: { flex: 1, backgroundColor: COLORS.background, color: COLORS.text, paddingHorizontal: 15, height: 45 },

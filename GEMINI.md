@@ -5,7 +5,7 @@ A production-quality To-Do List mobile application built with **React Native CLI
 ## 🚀 Project Overview
 - **Framework:** React Native 0.76.1
 - **Engine:** Hermes
-- **Architecture:** **Stable Bridge Mode**. All "New Architecture" (Fabric) code has been removed for maximum stability on Android 14/15.
+- **Architecture:** **Stable Bridge Mode**. All "New Architecture" (Fabric) code has been removed for maximum stability on Android 14/15. (Note: `newArchEnabled=false` enforced in `gradle.properties` to prevent Reanimated initialization crashes).
 - **Styling:** Vanilla StyleSheet with a dark mode "System" aesthetic (Neon Blue/Glows).
 - **Persistence:** Local data storage via `@react-native-async-storage/async-storage`.
 - **System Features:** Quest Categories (Regular, One-Time, LongTerm), 5 Skill Trees (Coding, Workout, Cultural, Sports, Mental), Rep counters for physical quests, XP/Leveling system, Attribute Points, Penalty Quests, Player Registration, and Calendar History.
@@ -38,7 +38,7 @@ A production-quality To-Do List mobile application built with **React Native CLI
 - **`src/storage/`**: `taskStorage.ts` (Includes last-used settings logic and data clearing)
 - **`src/utils/`**: `templates.ts`, `theme.ts`, `types.ts`, `notifications.ts`, `feedback.ts` (Haptics/Audio)
 
-## ✅ Build Status (April 20, 2026) - **STABLE**
+## ✅ Build Status (April 21, 2026) - **STABLE**
 
 ### Core Features Implemented
 1. ✅ **System Navigation**: Animated Sidebar (Glitch Effect).
@@ -59,8 +59,12 @@ A production-quality To-Do List mobile application built with **React Native CLI
 6. ✅ **Keyboard Stability**: Input fields are now stable and do not lose focus.
 7. ✅ **Advanced Task Management**:
     *   **Sub-Quests**: Multi-step checklists for Long-Term goals.
-    *   **Smart Patterns**: Selection for Daily, Weekly, or Custom recurring cycles.
-    *   **Search & Archive**: Real-time filtering and dedicated archive storage for Quest Log and Memo Pad.
+    *   **Smart Patterns**: Selection for Daily, Weekly, or Custom recurring cycles with intelligent period-aware resets.
+    *   **Search & Archive/Unarchive**: Real-time filtering and full lifecycle management (Archive/Restore) for Quest Log and Memo Pad.
+8. ✅ **Visual Evolution**: Rank-based dynamic theme (colors/glows evolve from E-Rank Blue to S-Rank Gold).
+9. ✅ **Particle System**: Quest deletion triggers a high-end "shatter" particle effect using Reanimated.
+10. ✅ **Global State Synchronization**: Centralized stats management ensures real-time XP/Level updates across all screens.
+11. ✅ **System Stability**: Optimized build environment by removing redundant heavy libraries and enforcing stable architecture modes.
 
 ## 🎯 Next Steps (Optional Enhancements)
 1. Build a detailed quest view for task logs and descriptions.

@@ -1,27 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS } from '../utils/theme';
 import { UserStats, SkillType } from '../utils/types';
-import { loadStats, saveStats, getTitleByLevel } from '../storage/taskStorage';
+import { saveStats, getTitleByLevel } from '../storage/taskStorage';
 import RadarChart from '../components/RadarChart';
 import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
 
 interface SkillTreeScreenProps {
   onOpenMenu: () => void;
+  stats: UserStats | null;
+  refreshStats: () => void;
 }
 
-const SkillTreeScreen = ({ onOpenMenu }: SkillTreeScreenProps) => {
-  const [stats, setStats] = useState<UserStats | null>(null);
+const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenProps) => {
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      const data = await loadStats();
-      setStats(data);
-    };
-    fetchStats();
-  }, []);
-
-  const handleSpendPoint = (skillName: SkillType) => {
+  const handleSpendPoint = async (skillName: SkillType) => {
     if (!stats || stats.statPoints <= 0) {
       Alert.alert('Insufficient Points', 'You have no available Stat Points to distribute.');
       triggerHaptic('notificationError');
@@ -65,8 +58,8 @@ const SkillTreeScreen = ({ onOpenMenu }: SkillTreeScreenProps) => {
       triggerHaptic('impactMedium');
     }
 
-    setStats(newStats);
-    saveStats(newStats);
+    await saveStats(newStats);
+    refreshStats();
   };
 
   if (!stats) return null;

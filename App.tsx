@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StatusBar, View, StyleSheet, Platform } from 'react-native';
 import LoadingScreen from './src/screens/LoadingScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -20,18 +20,24 @@ const App = () => {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [needsRegistration, setNeedsRegistration] = useState(false);
 
+  const fetchStats = useCallback(async () => {
+    const data = await loadStats();
+    setStats(data);
+    if (!data.playerName) {
+      setNeedsRegistration(true);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchStats = async () => {
-      const data = await loadStats();
-      setStats(data);
-      if (!data.playerName) {
-        setNeedsRegistration(true);
-      }
-    };
     if (!isLoading) {
       fetchStats();
     }
-  }, [isLoading, currentScreen]);
+  }, [isLoading, fetchStats]);
+
+  // Refresh stats when switching back to Home or SkillTree if they were updated elsewhere
+  useEffect(() => {
+    fetchStats();
+  }, [currentScreen, fetchStats]);
 
   if (isLoading) {
     return (
@@ -46,20 +52,29 @@ const App = () => {
     return (
       <>
         <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-        <RegistrationScreen onComplete={() => setNeedsRegistration(false)} />
+        <RegistrationScreen onComplete={() => {
+          setNeedsRegistration(false);
+          fetchStats();
+        }} />
       </>
     );
   }
 
   const renderScreen = () => {
+    const commonProps = {
+      onOpenMenu: () => setIsSidebarOpen(true),
+      stats: stats,
+      refreshStats: fetchStats
+    };
+
     switch (currentScreen) {
-      case 'Home': return <HomeScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
-      case 'SkillTree': return <SkillTreeScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
+      case 'Home': return <HomeScreen {...commonProps} />;
+      case 'SkillTree': return <SkillTreeScreen {...commonProps} />;
       case 'Testing': return <TestingScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
       case 'Calendar': return <CalendarScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
       case 'Settings': return <SettingsScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
       case 'Memo': return <MemoScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
-      default: return <HomeScreen onOpenMenu={() => setIsSidebarOpen(true)} />;
+      default: return <HomeScreen {...commonProps} />;
     }
   };
 
@@ -73,7 +88,10 @@ const App = () => {
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
         currentScreen={currentScreen}
-        onNavigate={(screen) => setCurrentScreen(screen as any)}
+        onNavigate={(screen) => {
+          setCurrentScreen(screen as any);
+          setIsSidebarOpen(false);
+        }}
         stats={stats}
       />
     </View>

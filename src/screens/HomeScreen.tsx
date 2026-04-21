@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform, LayoutAnimation, UIManager } from 'react-native';
 import { COLORS, SHADOWS, SKILL_COLORS, CATEGORY_COLORS, getRankTheme } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats, TaskFrequency } from '../utils/types';
-import { saveTasks, loadTasks, saveStats, loadStats, calculateLevelUp, getTitleByLevel, saveLastUsedSettings, loadLastUsedSettings, addToHistory } from '../storage/taskStorage';
+import { saveTasks, loadTasks, saveStats, calculateLevelUp, getTitleByLevel, addToHistory } from '../storage/taskStorage';
 import { QUEST_TEMPLATES } from '../utils/templates';
 import { updateSystemNotifications } from '../utils/notifications';
 import TaskItem from '../components/TaskItem';
@@ -108,7 +108,7 @@ const CreationPanel = memo(({ onAdd, onShowTemplates, selectedSkill, setSelected
     </View>
 ));
 
-const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
+const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => void, stats: UserStats | null, refreshStats: () => void }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [taskInput, setTaskInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<TaskCategory>('Regular');
@@ -118,7 +118,6 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   const [scheduledDays, setScheduledDays] = useState(0);
   const [deadlineDays, setDeadlineDays] = useState(0);
   const [isTemplatePickerVisible, setIsTemplatePickerVisible] = useState(false);
-  const [stats, setStats] = useState<UserStats | null>(null);
   const [levelUpData, setLevelUpData] = useState<{ level: number } | null>(null);
   const [userRank, setUserRank] = useState('E');
   const [deletingTask, setDeletingTask] = useState<{ id: string, x: number, y: number, color: string } | null>(null);
@@ -133,18 +132,19 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
   useEffect(() => {
     const initializeSystem = async () => {
       const loadedTasks = await loadTasks();
-      const loadedStats = await loadStats();
+      if (!stats) return;
       
-      const rank = loadedStats.reputationTitle.split('-')[0];
+      const rank = stats.reputationTitle.split('-')[0];
       setUserRank(rank || 'E');
 
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      const lastReset = new Date(loadedStats.lastResetDate);
+      const lastReset = new Date(stats.lastResetDate);
       const lastResetDay = new Date(lastReset.getFullYear(), lastReset.getMonth(), lastReset.getDate()).getTime();
 
       let currentTasks = [...loadedTasks];
       let statsUpdated = false;
+      const updatedStats = { ...stats };
 
       // Day Reset Logic
       if (today > lastResetDay) {
@@ -170,7 +170,7 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
           if (shouldReset) return { ...t, completed: false, currentCount: t.skillType === 'Workout' ? 0 : t.currentCount };
           return t;
         });
-        loadedStats.lastResetDate = Date.now();
+        updatedStats.lastResetDate = Date.now();
         statsUpdated = true;
       }
 
@@ -184,19 +184,20 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
       }
 
       setTasks(currentTasks);
-      setStats(loadedStats);
-      if (statsUpdated) await saveStats(loadedStats);
+      if (statsUpdated) {
+          await saveStats(updatedStats);
+          refreshStats();
+      }
       setIsInitialized(true);
     };
     initializeSystem();
-  }, []);
+  }, [stats === null]); // Only run once when stats become available
 
   useEffect(() => { 
     if (isInitialized) {
       saveTasks(tasks);
-      if (stats) updateSystemNotifications(tasks, stats);
     }
-  }, [tasks, stats, isInitialized]);
+  }, [tasks, isInitialized]);
 
   const addTask = () => {
     if (taskInput.trim() === '') return;
@@ -244,6 +245,11 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
     triggerHaptic('impactMedium');
   };
 
+  const unarchiveTask = (id: string) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, isArchived: false } : t));
+    triggerHaptic('impactMedium');
+  };
+
   const getSections = () => {
     const now = new Date().setHours(0,0,0,0);
     let filtered = tasks;
@@ -267,65 +273,29 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
     ].filter(s => s.data.length > 0);
   };
 
-  const toggleTask = (id: string) => {
+  const toggleTask = async (id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setTasks(prev => prev.map(t => {
+    const updatedTasks = tasks.map(t => {
       if (t.id === id) {
         const completed = !t.completed;
-        if (completed) {
-          addToHistory(t);
-          if (t.isPenalty) {
-            triggerHaptic('notificationWarning');
-            playSound(FEEDBACK_SOUNDS.PENALTY_COMPLETE);
-          } else {
-            triggerHaptic('notificationSuccess');
-            playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
-          }
-          if (stats && !t.isPenalty) {
-            const skill = t.skillType;
-            const xpGain = t.xpValue || 10;
-            const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
-            const newStats = { ...stats };
-            newStats.skills[skill] = updatedSkill;
-            newStats.totalXp += xpGain;
-            if (levelUpCount > 0) {
-              newStats.totalLevel += levelUpCount;
-              newStats.statPoints += levelUpCount * 3;
-              newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
-              setLevelUpData({ level: newStats.totalLevel });
-              triggerHaptic('impactHeavy');
-              playSound(FEEDBACK_SOUNDS.LEVEL_UP);
-              const newRank = newStats.reputationTitle.split('-')[0];
-              setUserRank(newRank || 'E');
-            }
-            setStats(newStats);
-          }
-        }
+        if (completed) addToHistory(t);
         return { ...t, completed, completedAt: completed ? Date.now() : undefined };
       }
       return t;
-    }));
-  };
+    });
+    setTasks(updatedTasks);
 
-  const updateTaskCount = (id: string, c: number) => {
-    setTasks(prev => {
-      const taskIndex = prev.findIndex(t => t.id === id);
-      if (taskIndex === -1) return prev;
-      const task = prev[taskIndex];
-      const updatedTask = { ...task, currentCount: c };
-      if (task.targetCount && c >= task.targetCount && !task.completed) {
-        updatedTask.completed = true;
-        updatedTask.completedAt = Date.now();
-        addToHistory(updatedTask);
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        if (task.isPenalty) {
-          triggerHaptic('notificationWarning');
-          playSound(FEEDBACK_SOUNDS.PENALTY_COMPLETE);
-        } else {
-          triggerHaptic('notificationSuccess');
-          playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
-        }
-        if (stats && !task.isPenalty) {
+    const task = tasks.find(t => t.id === id);
+    if (task && !task.completed) { // If it was just completed
+      if (task.isPenalty) {
+        triggerHaptic('notificationWarning');
+        playSound(FEEDBACK_SOUNDS.PENALTY_COMPLETE);
+      } else {
+        triggerHaptic('notificationSuccess');
+        playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+        
+        // Handle XP Gain
+        if (stats) {
           const skill = task.skillType;
           const xpGain = task.xpValue || 10;
           const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
@@ -342,15 +312,64 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
             const newRank = newStats.reputationTitle.split('-')[0];
             setUserRank(newRank || 'E');
           }
-          setStats(newStats);
+          await saveStats(newStats);
+          refreshStats();
         }
-      } else {
-        triggerHaptic(task.isPenalty ? 'impactMedium' : 'impactLight');
       }
-      const newTasks = [...prev];
-      newTasks[taskIndex] = updatedTask;
-      return newTasks;
-    });
+    }
+  };
+
+  const updateTaskCount = async (id: string, c: number) => {
+    const taskIndex = tasks.findIndex(t => t.id === id);
+    if (taskIndex === -1) return;
+    
+    const task = tasks[taskIndex];
+    const updatedTask = { ...task, currentCount: c };
+    let justCompleted = false;
+
+    if (task.targetCount && c >= task.targetCount && !task.completed) {
+      updatedTask.completed = true;
+      updatedTask.completedAt = Date.now();
+      addToHistory(updatedTask);
+      justCompleted = true;
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+
+    const newTasks = [...tasks];
+    newTasks[taskIndex] = updatedTask;
+    setTasks(newTasks);
+
+    if (justCompleted) {
+      if (task.isPenalty) {
+        triggerHaptic('notificationWarning');
+        playSound(FEEDBACK_SOUNDS.PENALTY_COMPLETE);
+      } else {
+        triggerHaptic('notificationSuccess');
+        playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+        if (stats) {
+          const skill = task.skillType;
+          const xpGain = task.xpValue || 10;
+          const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
+          const newStats = { ...stats };
+          newStats.skills[skill] = updatedSkill;
+          newStats.totalXp += xpGain;
+          if (levelUpCount > 0) {
+            newStats.totalLevel += levelUpCount;
+            newStats.statPoints += levelUpCount * 3;
+            newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
+            setLevelUpData({ level: newStats.totalLevel });
+            triggerHaptic('impactHeavy');
+            playSound(FEEDBACK_SOUNDS.LEVEL_UP);
+            const newRank = newStats.reputationTitle.split('-')[0];
+            setUserRank(newRank || 'E');
+          }
+          await saveStats(newStats);
+          refreshStats();
+        }
+      }
+    } else {
+      triggerHaptic(task.isPenalty ? 'impactMedium' : 'impactLight');
+    }
   };
 
   return (
@@ -374,7 +393,7 @@ const HomeScreen = ({ onOpenMenu }: { onOpenMenu: () => void }) => {
                 }, 300);
               }} 
               onUpdate={(id, text) => setTasks(prev => prev.map(t => t.id === id ? {...t, text} : t))} 
-              onUpdateCount={updateTaskCount} onToggleSubTask={toggleSubTask} onAddSubTask={addSubTask} onArchive={archiveTask}
+              onUpdateCount={updateTaskCount} onToggleSubTask={toggleSubTask} onAddSubTask={addSubTask} onArchive={archiveTask} onUnarchive={unarchiveTask}
             />}
             ListHeaderComponent={<CreationPanel 
               onAdd={() => { addTask(); triggerHaptic('impactMedium'); }} 

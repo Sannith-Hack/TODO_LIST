@@ -12,9 +12,10 @@ interface TaskItemProps {
   onToggleSubTask?: (taskId: string, subTaskId: string) => void;
   onAddSubTask?: (taskId: string, text: string) => void;
   onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
 }
 
-const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleSubTask, onAddSubTask, onArchive }: TaskItemProps) => {
+const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleSubTask, onAddSubTask, onArchive, onUnarchive }: TaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
   const [newSubTask, setNewSubTask] = useState('');
@@ -190,7 +191,11 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
           </TouchableOpacity>
         ) : (
           <>
-            {item.completed && !item.isArchived && onArchive && (
+            {item.isArchived && onUnarchive ? (
+              <TouchableOpacity onPress={() => onUnarchive(item.id)} style={styles.actionButton}>
+                <Text style={styles.unarchiveButtonText}>UN-ARC</Text>
+              </TouchableOpacity>
+            ) : item.completed && onArchive && (
                <TouchableOpacity onPress={() => onArchive(item.id)} style={styles.actionButton}>
                 <Text style={styles.archiveButtonText}>ARCHIVE</Text>
               </TouchableOpacity>
@@ -412,6 +417,11 @@ const styles = StyleSheet.create({
   },
   archiveButtonText: {
     color: COLORS.accent,
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  unarchiveButtonText: {
+    color: COLORS.success,
     fontSize: 9,
     fontWeight: 'bold',
   }

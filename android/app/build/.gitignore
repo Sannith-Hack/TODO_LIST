@@ -10,11 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 /.idea
-intermediates
 generated
+intermediates
 kotlin
-tmp
-
 # testing
 /coverage
 *.sql
