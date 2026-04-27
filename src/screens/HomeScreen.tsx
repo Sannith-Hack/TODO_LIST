@@ -2,9 +2,11 @@ import React, { useState, useEffect, memo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, SectionList, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Keyboard, Platform, LayoutAnimation, UIManager } from 'react-native';
 import { COLORS, getColors, SHADOWS, SKILL_COLORS, CATEGORY_COLORS, getRankTheme } from '../utils/theme';
 import { Task, TaskCategory, SkillType, UserStats, TaskFrequency } from '../utils/types';
-import { saveTasks, loadTasks, saveStats, calculateLevelUp, getTitleByLevel, addToHistory } from '../storage/taskStorage';
+import { saveTasks, loadTasks, saveStats, calculateLevelUp, getTitleByLevel, addToHistory, removeFromHistory } from '../storage/taskStorage';
 import { QUEST_TEMPLATES } from '../utils/templates';
+import { analyzeQuestComplexity } from '../utils/complexityModel';
 import { updateSystemNotifications } from '../utils/notifications';
+import { processQuestCompletion } from '../utils/engine';
 import TaskItem from '../components/TaskItem';
 import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
 import LevelUpModal from '../components/LevelUpModal';
@@ -242,6 +244,7 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           await saveStats(updatedStats);
           refreshStats();
       }
+      await updateSystemNotifications(currentTasks, updatedStats);
       setIsInitialized(true);
     };
     initializeSystem();
@@ -253,15 +256,17 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
     }
   }, [tasks, isInitialized]);
 
-  const addTask = () => {
+  const addTask = async () => {
     if (taskInput.trim() === '') return;
     const now = new Date().setHours(0,0,0,0);
     const dueDate = scheduledDays > 0 ? now + (scheduledDays * 24 * 60 * 60 * 1000) : undefined;
     const deadline = deadlineDays > 0 ? (dueDate || now) + (deadlineDays * 24 * 60 * 60 * 1000) : undefined;
     
+    const { difficulty, xpValue } = analyzeQuestComplexity(taskInput.trim(), selectedCategory, parseInt(targetCount) || undefined);
+
     const newTask: Task = { 
         id: Date.now().toString(), text: taskInput.trim(), completed: false, createdAt: Date.now(), dueDate, deadline,
-        category: selectedCategory, skillType: selectedSkill, xpValue: 10,
+        category: selectedCategory, skillType: selectedSkill, xpValue, difficulty,
         currentCount: selectedSkill === 'Workout' ? 0 : undefined,
         targetCount: selectedSkill === 'Workout' ? parseInt(targetCount) || 0 : undefined,
         frequency: selectedCategory === 'Regular' ? frequency : undefined,
@@ -270,6 +275,9 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setTasks(prev => [newTask, ...prev]);
     announce(SYSTEM_VOICE.QUEST_ARRIVED(), stats);
+    if (stats) {
+      await updateSystemNotifications([newTask, ...tasks], stats);
+    }
     setTaskInput(''); setTargetCount(''); setScheduledDays(0); setDeadlineDays(0);
   };
 
@@ -334,6 +342,7 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
       if (t.id === id) {
         const completed = !t.completed;
         if (completed) addToHistory(t);
+        else removeFromHistory(t.id);
         return { ...t, completed, completedAt: completed ? Date.now() : undefined };
       }
       return t;
@@ -349,54 +358,14 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
         triggerHaptic('notificationSuccess');
         playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
         
-        // Handle XP Gain
+        // Handle XP Gain & System Engine
         if (stats) {
-          const skill = task.skillType;
+          const { newStats, levelUpOccurred } = processQuestCompletion(task, stats);
           
-          // Streak Multiplier: +10% XP per streak day, max 2x (100% bonus)
-          let multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
-          
-          // Shadow Assignment Bonus: +20% XP if a shadow is assigned to this skill
-          if (stats.shadowAssignments?.[skill]) {
-            multiplier += 0.2;
-          }
-          const baseXP = task.xpValue || 10;
-          const xpGain = Math.floor(baseXP * multiplier);
-          
-          const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
-          const newStats = { ...stats };
-          newStats.skills[skill] = updatedSkill;
-          newStats.totalXp += xpGain;
-
-          // Dungeon Progression Logic
-          if (newStats.dungeonProgress?.activeDungeonId) {
-            const dp = { ...newStats.dungeonProgress };
-            dp.floorCompletionCount += 1;
-            
-            if (dp.floorCompletionCount >= 3) {
-              dp.currentFloor += 1;
-              dp.floorCompletionCount = 0;
-              
-              // Check if dungeon cleared
-              const dungeon = [
-                { id: 'd1', floors: 5, name: 'THE TRIALS' },
-                { id: 'd2', floors: 10, name: 'RE-AWAKENING GATE' },
-                { id: 'd3', floors: 20, name: 'SHADOW DUNGEON' },
-                { id: 'd4', floors: 1, name: 'JEJU ISLAND' }
-              ].find(d => d.id === dp.activeDungeonId);
-
-              if (dungeon && dp.currentFloor > dungeon.floors) {
-                dp.clearedDungeons = [...(dp.clearedDungeons || []), dp.activeDungeonId];
-                dp.activeDungeonId = undefined;
-                Alert.alert('DUNGEON CLEARED', `You have conquered ${dungeon.name}! Massive XP gained.`);
-                newStats.totalXp += 500; // Dungeon Clear Bonus
-                announce(`Dungeon cleared. You have conquered ${dungeon.name}.`, newStats);
-              } else {
-                announce(`Floor cleared. Descending to floor ${dp.currentFloor}.`, newStats);
-                triggerHaptic('impactHeavy');
-              }
-            }
-            newStats.dungeonProgress = dp;
+          if (levelUpOccurred) {
+            setLevelUpData({ level: newStats.totalLevel });
+            const rank = newStats.reputationTitle.split('-')[0];
+            setUserRank(rank || 'E');
           }
 
           // Early Riser Achievement Check
@@ -410,22 +379,9 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
             }
           }
 
-          if (levelUpCount > 0) {
-            newStats.totalLevel += levelUpCount;
-            newStats.statPoints += levelUpCount * 3;
-            newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
-            setLevelUpData({ level: newStats.totalLevel });
-            announce(SYSTEM_VOICE.LEVEL_UP(newStats.totalLevel), newStats);
-            if (newRank !== userRank) {
-               announce(SYSTEM_VOICE.RANK_UP(newRank), newStats);
-            }
-            triggerHaptic('impactHeavy');
-            playSound(FEEDBACK_SOUNDS.LEVEL_UP);
-            const newRank = newStats.reputationTitle.split('-')[0];
-            setUserRank(newRank || 'E');
-          }
           await saveStats(newStats);
           refreshStats();
+          await updateSystemNotifications(updatedTasks, newStats);
         }
       }
     }
@@ -458,70 +414,19 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
       } else {
         triggerHaptic('notificationSuccess');
         playSound(FEEDBACK_SOUNDS.QUEST_COMPLETE);
+        
         if (stats) {
-          const skill = task.skillType;
+          const { newStats, levelUpOccurred } = processQuestCompletion(task, stats);
           
-          // Streak Multiplier: +10% XP per streak day, max 2x (100% bonus)
-          let multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
-          
-          // Shadow Assignment Bonus: +20% XP if a shadow is assigned to this skill
-          if (stats.shadowAssignments?.[skill]) {
-            multiplier += 0.2;
-          }
-          const baseXP = task.xpValue || 10;
-          const xpGain = Math.floor(baseXP * multiplier);
-          
-          const { updatedSkill, levelUpCount } = calculateLevelUp(stats.skills[skill], xpGain);
-          const newStats = { ...stats };
-          newStats.skills[skill] = updatedSkill;
-          newStats.totalXp += xpGain;
-
-          // Dungeon Progression Logic
-          if (newStats.dungeonProgress?.activeDungeonId) {
-            const dp = { ...newStats.dungeonProgress };
-            dp.floorCompletionCount += 1;
-            
-            if (dp.floorCompletionCount >= 3) {
-              dp.currentFloor += 1;
-              dp.floorCompletionCount = 0;
-              
-              // Check if dungeon cleared
-              const dungeon = [
-                { id: 'd1', floors: 5, name: 'THE TRIALS' },
-                { id: 'd2', floors: 10, name: 'RE-AWAKENING GATE' },
-                { id: 'd3', floors: 20, name: 'SHADOW DUNGEON' },
-                { id: 'd4', floors: 1, name: 'JEJU ISLAND' }
-              ].find(d => d.id === dp.activeDungeonId);
-
-              if (dungeon && dp.currentFloor > dungeon.floors) {
-                dp.clearedDungeons = [...(dp.clearedDungeons || []), dp.activeDungeonId];
-                dp.activeDungeonId = undefined;
-                Alert.alert('DUNGEON CLEARED', `You have conquered ${dungeon.name}! Massive XP gained.`);
-                newStats.totalXp += 500; // Dungeon Clear Bonus
-                announce(`Dungeon cleared. You have conquered ${dungeon.name}.`, newStats);
-              } else {
-                announce(`Floor cleared. Descending to floor ${dp.currentFloor}.`, newStats);
-                triggerHaptic('impactHeavy');
-              }
-            }
-            newStats.dungeonProgress = dp;
-          }
-          if (levelUpCount > 0) {
-            newStats.totalLevel += levelUpCount;
-            newStats.statPoints += levelUpCount * 3;
-            newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
+          if (levelUpOccurred) {
             setLevelUpData({ level: newStats.totalLevel });
-            announce(SYSTEM_VOICE.LEVEL_UP(newStats.totalLevel), newStats);
-            if (newRank !== userRank) {
-               announce(SYSTEM_VOICE.RANK_UP(newRank), newStats);
-            }
-            triggerHaptic('impactHeavy');
-            playSound(FEEDBACK_SOUNDS.LEVEL_UP);
-            const newRank = newStats.reputationTitle.split('-')[0];
-            setUserRank(newRank || 'E');
+            const rank = newStats.reputationTitle.split('-')[0];
+            setUserRank(rank || 'E');
           }
+
           await saveStats(newStats);
           refreshStats();
+          await updateSystemNotifications(newTasks, newStats);
         }
       }
     } else {
@@ -544,9 +449,11 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
               theme={theme}
               onDelete={(id) => {
                 setDeletingTask({ id, x: 100, y: 300, color: SKILL_COLORS[item.skillType] || primaryColor });
-                setTimeout(() => {
+                setTimeout(async () => {
                   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                  setTasks(prev => prev.filter(t => t.id !== id));
+                  const updated = tasks.filter(t => t.id !== id);
+                  setTasks(updated);
+                  if (stats) await updateSystemNotifications(updated, stats);
                   triggerHaptic('impactMedium');
                 }, 300);
               }} 

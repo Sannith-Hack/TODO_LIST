@@ -91,8 +91,16 @@ const TaskItem = ({ item, onToggle, onDelete, onUpdate, onUpdateCount, onToggleS
               {item.isPenalty ? 'PENALTY' : item.category.toUpperCase()}
             </Text>
           </View>
+          <View style={[styles.rankBadge, { borderColor: COLORS[item.difficulty as keyof typeof COLORS] || colors.primary }]}>
+            <Text style={[styles.rankBadgeText, { color: COLORS[item.difficulty as keyof typeof COLORS] || colors.primary }]}>
+              {item.difficulty}-RANK
+            </Text>
+          </View>
           <Text style={[styles.skillLabel, { color: itemColor }]}>
             {item.isPenalty ? 'SYSTEM' : item.skillType}
+          </Text>
+          <Text style={[styles.xpLabel, { color: colors.success }]}>
+            +{item.xpValue} XP
           </Text>
           {item.deadline && !item.completed && (
             <Text style={[styles.deadlineText, { color: colors.danger }]}>
@@ -267,6 +275,23 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: 'bold',
     letterSpacing: 0.5,
+  },
+  rankBadge: {
+    borderWidth: 1,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    marginRight: 8,
+    borderRadius: 2,
+  },
+  rankBadgeText: {
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  xpLabel: {
+    fontSize: 9,
+    fontWeight: '900',
+    marginLeft: 8,
+    opacity: 0.9,
   },
   skillLabel: {
     fontSize: 10,

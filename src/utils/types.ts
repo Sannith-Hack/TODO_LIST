@@ -22,6 +22,7 @@ export interface Task {
   skillType: SkillType;
   currentCount?: number;
   targetCount?: number;
+  difficulty: 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
   xpValue: number;
   isPenalty?: boolean;
   subTasks?: SubTask[];

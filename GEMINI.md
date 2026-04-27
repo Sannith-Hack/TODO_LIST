@@ -32,35 +32,37 @@ A production-quality To-Do List mobile application built with **React Native CLI
 - **Gradle Fixes:** Applied `react-native-svg` build.gradle override for compatibility with modern Gradle.
 - **System Audio:** Raw resource directory (`android/app/src/main/res/raw`) initialized for Quest and Level-Up SFX.
 
-## 📂 Folder Structure & Documentation (v1.0.7)
+## 📂 Folder Structure & Documentation (v1.1.0)
 - **`src/components/`**: 
-    * `TaskItem.tsx`: Theme-aware quest card with streak XP multiplier visibility (`x1.2 XP`).
+    * `TaskItem.tsx`: Theme-aware quest card with Rank Badges and dynamic XP values.
     * `Sidebar.tsx`: Glitch-animated navigation menu with real-time rank-based glows.
     * `ParticleEffect.tsx`: Reanimated-based "dissolve" effect for quest deletion.
-    * `RadarChart.tsx`: Stability-first placeholder (SVG-free to prevent runtime crashes).
+    * `RadarChart.tsx`: Mathematically centered native View-based pentagon for attribute visualization.
 - **`src/screens/`**: 
-    * `HomeScreen.tsx`: Core logic for daily protocol resets, streak tracking, and XP gain.
-    * `SkillTreeScreen.tsx`: Player status window with manual Attribute allocation (STR/INT/etc.).
+    * `HomeScreen.tsx`: Core logic for daily protocol resets and quest lifecycle management.
+    * `SkillTreeScreen.tsx`: Player status window with manual Attribute allocation and Shadow Assignments.
+    * `DungeonScreen.tsx`: Visual "Gate" exploration map with floor-based progression.
     * `HunterReportScreen.tsx`: Growth analytics using a custom high-performance View-based bar chart.
-    * `TestingScreen.tsx`: Developer console for time-travel (day resets) and XP injection.
 - **`src/utils/`**:
+    * `engine.ts`: Centralized completion logic (XP, Dungeons, Level-ups).
+    * `complexityModel.ts`: Heuristic semantic analysis for dynamic XP allocation.
+    * `sovereign.ts`: "The Sovereign's Voice" Text-to-Speech (TTS) manager.
     * `theme.ts`: Dynamic theme engine supporting `SYSTEM: DARK` and `SYSTEM: WHITE`.
-    * `feedback.ts`: Centralized haptics and "System" audio notification manager.
 
-## ✅ Build Status (April 21, 2026 - v1.0.7) - **STABLE**
+## ✅ Build Status (April 27, 2026 - v1.1.0) - **STABLE**
 
 ### Core Features Implemented
-1. ✅ **Dual-Theme Protocol**: Full support for Dark and White themes across all system windows.
-2. ✅ **Shadow Streak System**: Automated tracking of daily protocols with cumulative XP multipliers.
-3. ✅ **Manual Stats**: 3 Attribute Points per level-up to be distributed into STR, AGI, INT, SEN, or VIT.
-4. ✅ **Growth Analytics**: A 100% crash-proof Hunter's Report with 30-day XP visualization.
-5. ✅ **Stability Engine**: Total removal of unstable SVG libraries; replaced with native View-based rendering for 100% uptime on Android 14/15.
+1. ✅ **The Sovereign's Voice**: Authoritative Text-to-Speech (TTS) for system announcements.
+2. ✅ **Gate Exploration**: Comprehensive Dungeon Map with floor-based descent mechanics.
+3. ✅ **Semantic Intelligence**: Heuristic model for dynamic XP/Rank allocation based on quest complexity.
+4. ✅ **Shadow Soldiers 2.0**: Interactive assignment system providing strategic XP boosts.
+5. ✅ **Stability Visuals**: 100% crash-proof mathematically centered Radar Chart (SVG-free).
+6. ✅ **Notification Sync**: Proactive clearing of penalty alerts upon daily protocol completion.
 
 ## 🎯 Future Protocol (Planned Enhancements)
-1. ☁️ **Supabase Cloud Sync**: Real-time cross-device synchronization and player progress backup.
-2. 🎒 **System Inventory**: "Item" drops for completing S-Rank quests (e.g., "Reset Scroll" to clear a penalty).
-3. 🗺️ **Dungeon Map**: A visual progression path representing different life categories as "Gates."
-4. ⚔️ **Shadow Extraction 2.0**: Interactive animations when unlocking new Shadow Soldiers.
-5. 📊 **Advanced Radar**: Implementation of a custom-coded SVG radar chart for real-time stat visualization.
+1. 🎒 **System Inventory**: "Item" drops for completing S-Rank quests (e.g., "Reset Scroll" to clear a penalty).
+2. ☁️ **Supabase Cloud Sync**: Real-time cross-device synchronization and player progress backup.
+3. ⚔️ **Shadow Extraction 3.0**: Advanced interactive animations and level-up paths for shadow soldiers.
+4. 🗺️ **Job Change Protocol**: Visual progression paths and specialized hunter classes.
 
 

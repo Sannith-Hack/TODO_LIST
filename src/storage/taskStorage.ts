@@ -134,6 +134,20 @@ export const addToHistory = async (task: Task): Promise<void> => {
   await saveHistory([entry, ...history]);
 };
 
+export const removeFromHistory = async (taskId: string): Promise<void> => {
+  try {
+    const history = await loadHistory();
+    const today = new Date().setHours(0,0,0,0);
+    const updatedHistory = history.filter(entry => {
+      const entryDay = new Date(entry.completedAt).setHours(0,0,0,0);
+      return !(entry.taskId === taskId && entryDay === today);
+    });
+    await saveHistory(updatedHistory);
+  } catch (e) {
+    console.error('Failed to remove from history:', e);
+  }
+};
+
 export const clearAllData = async (): Promise<void> => {
   try {
     await AsyncStorage.multiRemove([TASKS_KEY, STATS_KEY, SETTINGS_KEY, HISTORY_KEY]);
