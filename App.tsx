@@ -13,6 +13,7 @@ import { COLORS, getColors } from './src/utils/theme';
 import { loadStats } from './src/storage/taskStorage';
 import { UserStats } from './src/utils/types';
 import RegistrationScreen from './src/screens/RegistrationScreen';
+import { initSovereign } from './src/utils/sovereign';
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +33,7 @@ const App = () => {
   useEffect(() => {
     if (!isLoading) {
       fetchStats();
+      initSovereign();
     }
   }, [isLoading, fetchStats]);
 

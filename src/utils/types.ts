@@ -68,6 +68,7 @@ export interface UserStats {
   lastResetDate: number;
   notificationSettings: {
     enabled: boolean;
+    ttsEnabled?: boolean; // The Sovereign's Voice
     interval: 15 | 30 | 60 | 120;
   };
   theme: 'dark' | 'light';

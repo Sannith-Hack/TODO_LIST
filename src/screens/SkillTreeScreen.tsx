@@ -5,6 +5,7 @@ import { UserStats, SkillType } from '../utils/types';
 import { saveStats, getTitleByLevel } from '../storage/taskStorage';
 import RadarChart from '../components/RadarChart';
 import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
+import { announce, SYSTEM_VOICE } from '../utils/sovereign';
 
 interface SkillTreeScreenProps {
   onOpenMenu: () => void;
@@ -89,6 +90,7 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
     };
 
     triggerHaptic('impactMedium');
+    announce(`Your ${attr} has increased to ${currentAttributes[attr] + 1}.`, stats);
     await saveStats(newStats);
     refreshStats();
   };
@@ -108,6 +110,7 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
 
     // Assign to new skill
     updatedAssignments[skill] = shadowName;
+    announce(SYSTEM_VOICE.SHADOW_EXTRACTION(shadowName), stats);
 
     const newStats: UserStats = {
       ...stats,

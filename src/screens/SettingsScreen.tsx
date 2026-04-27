@@ -30,6 +30,17 @@ const SettingsScreen = ({ onOpenMenu, stats, refreshStats }: SettingsScreenProps
     await updateSystemNotifications(tasks, updated);
   };
 
+  const updateTTS = async (ttsEnabled: boolean) => {
+    if (!stats) return;
+    triggerHaptic('impactMedium');
+    const updated = {
+      ...stats,
+      notificationSettings: { ...stats.notificationSettings, ttsEnabled }
+    };
+    await saveStats(updated);
+    refreshStats();
+  };
+
   const updateInterval = async (interval: 15 | 30 | 60 | 120) => {
     if (!stats) return;
     triggerHaptic('impactLight');
@@ -151,6 +162,22 @@ const SettingsScreen = ({ onOpenMenu, stats, refreshStats }: SettingsScreenProps
               </View>
             </View>
           )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>SYSTEM AUDIO</Text>
+          <View style={[styles.settingRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>THE SOVEREIGN'S VOICE</Text>
+              <Text style={[styles.settingDesc, { color: colors.textDim }]}>Enable text-to-speech for system announcements</Text>
+            </View>
+            <Switch
+              value={!!currentSettings.ttsEnabled}
+              onValueChange={updateTTS}
+              trackColor={{ false: '#333', true: colors.primary }}
+              thumbColor={colors.white}
+            />
+          </View>
         </View>
 
         <View style={styles.section}>

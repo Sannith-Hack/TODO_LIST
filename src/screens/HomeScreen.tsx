@@ -9,6 +9,7 @@ import TaskItem from '../components/TaskItem';
 import { triggerHaptic, playSound, FEEDBACK_SOUNDS } from '../utils/feedback';
 import LevelUpModal from '../components/LevelUpModal';
 import { ParticleEffect } from '../components/ParticleEffect';
+import { announce, announceSystemMessage, SYSTEM_VOICE } from '../utils/sovereign';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -173,15 +174,19 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           const soldiers = updatedStats.shadowSoldiers || [];
           if (streak >= 3 && !soldiers.includes('IGRIS')) {
             soldiers.push('IGRIS');
+            announce(SYSTEM_VOICE.SHADOW_EXTRACTION('IGRIS'), stats);
             Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: IGRIS (3-Day Streak)');
           } else if (streak >= 7 && !soldiers.includes('TANK')) {
             soldiers.push('TANK');
+            announce(SYSTEM_VOICE.SHADOW_EXTRACTION('TANK'), stats);
             Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: TANK (7-Day Streak)');
           } else if (streak >= 15 && !soldiers.includes('IRON')) {
             soldiers.push('IRON');
+            announce(SYSTEM_VOICE.SHADOW_EXTRACTION('IRON'), stats);
             Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: IRON (15-Day Streak)');
           } else if (streak >= 30 && !soldiers.includes('BERU')) {
             soldiers.push('BERU');
+            announce(SYSTEM_VOICE.SHADOW_EXTRACTION('BERU'), stats);
             Alert.alert('SHADOW EXTRACTION', 'You have extracted the shadow: BERU (30-Day Streak)');
           }
           updatedStats.shadowSoldiers = soldiers;
@@ -198,6 +203,7 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
             targetCount: missedDailies.length * 50 
           };
           currentTasks.push(penaltyQuest);
+          announce(SYSTEM_VOICE.PENALTY_ISSUED(), stats);
           Alert.alert('SYSTEM ERROR', 'Daily protocols were incomplete. Penalty Quest has been issued.');
         }
 
@@ -263,6 +269,7 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
     };
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setTasks(prev => [newTask, ...prev]);
+    announce(SYSTEM_VOICE.QUEST_ARRIVED(), stats);
     setTaskInput(''); setTargetCount(''); setScheduledDays(0); setDeadlineDays(0);
   };
 
@@ -377,6 +384,10 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
             newStats.statPoints += levelUpCount * 3;
             newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
             setLevelUpData({ level: newStats.totalLevel });
+            announce(SYSTEM_VOICE.LEVEL_UP(newStats.totalLevel), newStats);
+            if (newRank !== userRank) {
+               announce(SYSTEM_VOICE.RANK_UP(newRank), newStats);
+            }
             triggerHaptic('impactHeavy');
             playSound(FEEDBACK_SOUNDS.LEVEL_UP);
             const newRank = newStats.reputationTitle.split('-')[0];
@@ -438,6 +449,10 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
             newStats.statPoints += levelUpCount * 3;
             newStats.reputationTitle = getTitleByLevel(newStats.totalLevel);
             setLevelUpData({ level: newStats.totalLevel });
+            announce(SYSTEM_VOICE.LEVEL_UP(newStats.totalLevel), newStats);
+            if (newRank !== userRank) {
+               announce(SYSTEM_VOICE.RANK_UP(newRank), newStats);
+            }
             triggerHaptic('impactHeavy');
             playSound(FEEDBACK_SOUNDS.LEVEL_UP);
             const newRank = newStats.reputationTitle.split('-')[0];
