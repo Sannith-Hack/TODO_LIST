@@ -368,6 +368,37 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           newStats.skills[skill] = updatedSkill;
           newStats.totalXp += xpGain;
 
+          // Dungeon Progression Logic
+          if (newStats.dungeonProgress?.activeDungeonId) {
+            const dp = { ...newStats.dungeonProgress };
+            dp.floorCompletionCount += 1;
+            
+            if (dp.floorCompletionCount >= 3) {
+              dp.currentFloor += 1;
+              dp.floorCompletionCount = 0;
+              
+              // Check if dungeon cleared
+              const dungeon = [
+                { id: 'd1', floors: 5, name: 'THE TRIALS' },
+                { id: 'd2', floors: 10, name: 'RE-AWAKENING GATE' },
+                { id: 'd3', floors: 20, name: 'SHADOW DUNGEON' },
+                { id: 'd4', floors: 1, name: 'JEJU ISLAND' }
+              ].find(d => d.id === dp.activeDungeonId);
+
+              if (dungeon && dp.currentFloor > dungeon.floors) {
+                dp.clearedDungeons = [...(dp.clearedDungeons || []), dp.activeDungeonId];
+                dp.activeDungeonId = undefined;
+                Alert.alert('DUNGEON CLEARED', `You have conquered ${dungeon.name}! Massive XP gained.`);
+                newStats.totalXp += 500; // Dungeon Clear Bonus
+                announce(`Dungeon cleared. You have conquered ${dungeon.name}.`, newStats);
+              } else {
+                announce(`Floor cleared. Descending to floor ${dp.currentFloor}.`, newStats);
+                triggerHaptic('impactHeavy');
+              }
+            }
+            newStats.dungeonProgress = dp;
+          }
+
           // Early Riser Achievement Check
           const nowHour = new Date().getHours();
           if (nowHour < 8) {
@@ -444,6 +475,37 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           const newStats = { ...stats };
           newStats.skills[skill] = updatedSkill;
           newStats.totalXp += xpGain;
+
+          // Dungeon Progression Logic
+          if (newStats.dungeonProgress?.activeDungeonId) {
+            const dp = { ...newStats.dungeonProgress };
+            dp.floorCompletionCount += 1;
+            
+            if (dp.floorCompletionCount >= 3) {
+              dp.currentFloor += 1;
+              dp.floorCompletionCount = 0;
+              
+              // Check if dungeon cleared
+              const dungeon = [
+                { id: 'd1', floors: 5, name: 'THE TRIALS' },
+                { id: 'd2', floors: 10, name: 'RE-AWAKENING GATE' },
+                { id: 'd3', floors: 20, name: 'SHADOW DUNGEON' },
+                { id: 'd4', floors: 1, name: 'JEJU ISLAND' }
+              ].find(d => d.id === dp.activeDungeonId);
+
+              if (dungeon && dp.currentFloor > dungeon.floors) {
+                dp.clearedDungeons = [...(dp.clearedDungeons || []), dp.activeDungeonId];
+                dp.activeDungeonId = undefined;
+                Alert.alert('DUNGEON CLEARED', `You have conquered ${dungeon.name}! Massive XP gained.`);
+                newStats.totalXp += 500; // Dungeon Clear Bonus
+                announce(`Dungeon cleared. You have conquered ${dungeon.name}.`, newStats);
+              } else {
+                announce(`Floor cleared. Descending to floor ${dp.currentFloor}.`, newStats);
+                triggerHaptic('impactHeavy');
+              }
+            }
+            newStats.dungeonProgress = dp;
+          }
           if (levelUpCount > 0) {
             newStats.totalLevel += levelUpCount;
             newStats.statPoints += levelUpCount * 3;

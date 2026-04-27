@@ -8,25 +8,25 @@ interface RadarChartProps {
   theme?: 'dark' | 'light';
 }
 
-const CHART_SIZE = 160;
-const CENTER = CHART_SIZE / 2;
-const RADIUS = CHART_SIZE * 0.45;
+const CONTAINER_SIZE = 220;
+const CENTER = CONTAINER_SIZE / 2;
+const RADIUS = 70; // Fixed radius for the outer ring
 
 const RadarChart = ({ data, labels, theme = 'dark' }: RadarChartProps) => {
   const colors = getColors(theme);
   const primaryColor = colors.primary;
 
   // Calculate coordinates for 5 points of a pentagon
-  const getPoint = (index: number, value: number) => {
+  const getPoint = (index: number, value: number, radius: number) => {
     const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2;
-    const r = (Math.max(5, value) / 100) * RADIUS;
+    const r = (Math.max(5, value) / 100) * radius;
     return {
       x: CENTER + r * Math.cos(angle),
       y: CENTER + r * Math.sin(angle),
     };
   };
 
-  const dataPoints = data.map((val, i) => getPoint(i, val));
+  const dataPoints = data.map((val, i) => getPoint(i, val, RADIUS));
 
   // Helper to draw lines between points
   const renderLines = () => {
@@ -63,17 +63,10 @@ const RadarChart = ({ data, labels, theme = 'dark' }: RadarChartProps) => {
     return lines;
   };
 
-  const axes = labels.map((label, i) => {
-    const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-    const labelX = CENTER + (RADIUS + 25) * Math.cos(angle);
-    const labelY = CENTER + (RADIUS + 15) * Math.sin(angle);
-    return { labelX, labelY, label };
-  });
-
   return (
     <View style={styles.container}>
-      <View style={styles.chartWrapper}>
-        {/* Grid Circles */}
+      <View style={[styles.chartWrapper, { backgroundColor: colors.surface + '22' }]}>
+        {/* Outer Reference Rings */}
         {[0.25, 0.5, 0.75, 1.0].map((scale) => (
           <View key={`grid-${scale}`} style={[styles.gridCircle, { 
             width: RADIUS * 2 * scale,
@@ -85,24 +78,27 @@ const RadarChart = ({ data, labels, theme = 'dark' }: RadarChartProps) => {
           }]} />
         ))}
 
-        {/* Axis Lines */}
-        {[0, 1, 2, 3, 4].map((i) => (
-          <View key={`axis-${i}`} style={[styles.axis, { 
-            width: RADIUS,
-            left: CENTER,
-            top: CENTER,
-            backgroundColor: colors.border,
-            transform: [
-              { rotate: `${(i * 72) - 90}deg` },
-              { translateX: RADIUS / 2 }
-            ]
-          }]} />
-        ))}
+        {/* Axis Lines - Spoking from center */}
+        {[0, 1, 2, 3, 4].map((i) => {
+            const angle = (i * 72) - 90;
+            return (
+                <View key={`axis-${i}`} style={[styles.axis, { 
+                    width: RADIUS,
+                    left: CENTER,
+                    top: CENTER,
+                    backgroundColor: colors.border,
+                    transform: [
+                        { rotate: `${angle}deg` },
+                        { translateX: RADIUS / 2 }
+                    ]
+                }]} />
+            );
+        })}
 
-        {/* Polygon Area Lines */}
+        {/* The Actual Stats Polygon */}
         {renderLines()}
 
-        {/* Data Points */}
+        {/* Data Points (Vertices) */}
         {dataPoints.map((point, i) => (
           <View key={`point-${i}`} style={[
             styles.point, 
@@ -110,26 +106,33 @@ const RadarChart = ({ data, labels, theme = 'dark' }: RadarChartProps) => {
               left: point.x - 3, 
               top: point.y - 3, 
               backgroundColor: primaryColor,
+              ...SHADOWS.glowCustom(primaryColor)
             }
           ]} />
         ))}
 
-        {/* Labels */}
-        {axes.map((axis, i) => (
-          <Text key={`label-${i}`} style={[
-            styles.label, 
-            { 
-              left: axis.labelX - 20, 
-              top: axis.labelY - 8,
-              color: colors.textDim
-            }
-          ]}>
-            {axis.label}
-          </Text>
-        ))}
+        {/* Labels - Positioned mathematically outside the radius */}
+        {labels.map((label, i) => {
+            const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+            const lx = CENTER + (RADIUS + 25) * Math.cos(angle);
+            const ly = CENTER + (RADIUS + 15) * Math.sin(angle);
+            return (
+                <Text key={`label-${i}`} style={[
+                    styles.label, 
+                    { 
+                        left: lx - 20, 
+                        top: ly - 8,
+                        color: colors.textDim
+                    }
+                ]}>
+                    {label}
+                </Text>
+            );
+        })}
         
         <View style={styles.centerOverlay}>
-           <Text style={[styles.centerText, { color: primaryColor }]}>LVL.{Math.max(...data)}</Text>
+           <Text style={[styles.centerText, { color: primaryColor }]}>SYSTEM</Text>
+           <Text style={[styles.centerVal, { color: colors.text }]}>{Math.max(...data)}%</Text>
         </View>
       </View>
     </View>
@@ -140,17 +143,22 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginVertical: 20,
   },
   chartWrapper: {
-    width: CHART_SIZE + 80,
-    height: CHART_SIZE + 60,
+    width: CONTAINER_SIZE,
+    height: CONTAINER_SIZE,
+    borderRadius: CONTAINER_SIZE / 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   axis: {
     position: 'absolute',
     height: 1,
-    opacity: 0.3,
+    opacity: 0.2,
   },
   gridCircle: {
     position: 'absolute',
@@ -161,7 +169,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: 2,
     zIndex: 5,
-    opacity: 0.8,
   },
   point: {
     position: 'absolute',
@@ -172,19 +179,27 @@ const styles = StyleSheet.create({
   },
   label: {
     position: 'absolute',
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
     width: 40,
     textAlign: 'center',
+    letterSpacing: 1,
   },
   centerOverlay: {
     position: 'absolute',
-    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   centerText: {
     fontSize: 7,
     fontWeight: 'bold',
-    opacity: 0.4,
+    letterSpacing: 1,
+    opacity: 0.5,
+  },
+  centerVal: {
+    fontSize: 10,
+    fontWeight: '900',
+    marginTop: 2,
   }
 });
 

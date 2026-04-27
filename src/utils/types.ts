@@ -64,6 +64,13 @@ export interface UserStats {
   maxStreak: number;
   shadowSoldiers: string[]; // List of earned shadow soldier names
   shadowAssignments?: Partial<Record<SkillType, string>>; // Which shadow is assigned to which skill
+  dungeonProgress?: {
+    currentFloor: number;
+    maxFloor: number;
+    clearedDungeons: string[]; // List of unique dungeon IDs cleared
+    activeDungeonId?: string;
+    floorCompletionCount: number; // Quests completed on current floor
+  };
   achievements: string[]; // List of earned achievement IDs/Names
   lastResetDate: number;
   notificationSettings: {

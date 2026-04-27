@@ -16,8 +16,8 @@ import { UserStats } from '../utils/types';
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  currentScreen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport';
-  onNavigate: (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport') => void;
+  currentScreen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport' | 'Dungeon';
+  onNavigate: (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport' | 'Dungeon') => void;
   stats: UserStats | null;
 }
 
@@ -55,7 +55,7 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
     }
   }, [isOpen]);
 
-  const handleNavigate = (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport') => {
+  const handleNavigate = (screen: 'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport' | 'Dungeon') => {
     onNavigate(screen);
     onClose();
   };
@@ -99,6 +99,9 @@ const Sidebar = ({ isOpen, onClose, currentScreen, onNavigate, stats }: SidebarP
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'HunterReport' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('HunterReport')}>
               <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'HunterReport' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>HUNTER'S REPORT</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.menuItem, currentScreen === 'Dungeon' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('Dungeon')}>
+              <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'Dungeon' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>DUNGEON MAP</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.menuItem, currentScreen === 'SkillTree' && { backgroundColor: primaryColor + '15', borderLeftWidth: 4, borderLeftColor: primaryColor }]} onPress={() => handleNavigate('SkillTree')}>
               <Text style={[styles.menuText, { color: colors.textDim }, currentScreen === 'SkillTree' && { color: primaryColor, textShadowColor: primaryColor, textShadowRadius: 10 }]}>STATUS WINDOW</Text>

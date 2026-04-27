@@ -14,10 +14,11 @@ import { loadStats } from './src/storage/taskStorage';
 import { UserStats } from './src/utils/types';
 import RegistrationScreen from './src/screens/RegistrationScreen';
 import { initSovereign } from './src/utils/sovereign';
+import DungeonScreen from './src/screens/DungeonScreen';
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [currentScreen, setCurrentScreen] = useState<'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport'>('Home');
+  const [currentScreen, setCurrentScreen] = useState<'Home' | 'SkillTree' | 'Testing' | 'Calendar' | 'Settings' | 'Memo' | 'HunterReport' | 'Dungeon'>('Home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [needsRegistration, setNeedsRegistration] = useState(false);
@@ -82,6 +83,7 @@ const App = () => {
       case 'Settings': return <SettingsScreen {...commonProps} />;
       case 'Memo': return <MemoScreen onOpenMenu={() => setIsSidebarOpen(true)} stats={stats} />;
       case 'HunterReport': return <HunterReportScreen {...commonProps} />;
+      case 'Dungeon': return <DungeonScreen {...commonProps} />;
       default: return <HomeScreen {...commonProps} />;
     }
   };
