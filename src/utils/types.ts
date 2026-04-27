@@ -63,6 +63,7 @@ export interface UserStats {
   streakCount: number;
   maxStreak: number;
   shadowSoldiers: string[]; // List of earned shadow soldier names
+  shadowAssignments?: Partial<Record<SkillType, string>>; // Which shadow is assigned to which skill
   achievements: string[]; // List of earned achievement IDs/Names
   lastResetDate: number;
   notificationSettings: {

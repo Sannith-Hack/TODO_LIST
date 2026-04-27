@@ -1,119 +1,19 @@
-  1. Navigation: The "System Menu" Sidebar
-  Instead of the Bottom Tab Bar, we should implement a Side Drawer (Sidebar).
-   * Aesthetic: A semi-transparent dark-blue overlay that slides from the left with a "glitch" or "fade-in" animation.
-   * Header in Sidebar: Your Profile Icon, Rank (e.g., "E-Rank"), and Level (e.g., "Lv. 15") displayed at the top so you always
-     see your status while navigating.
-   * Menu Items: Quest Log, Status Window, Skill Trees, and System Console.
-   * Why: This frees up vertical space for your tasks and feels more like an RPG "Main Menu."
+  ⚠️ Partially Implemented / Placeholders
+   * Visual "Hexagon" Stats Chart: RadarChart.tsx is currently in "Stability Mode" (a placeholder).
+     This was a strategic choice to prevent runtime crashes caused by unstable SVG libraries on
+     Android 14/15.
+   * Shadow Soldiers: "Shadow Extraction" is implemented as a reward for daily streaks (Igris at 3
+     days, Beru at 30 days, etc.), but the Interactive Shadow Soldiers 2.0 (assigning them to skill
+     trees) is not yet active.
 
-  2. Input Efficiency: "Quick Quest" Dropdown Templates
-  To stop you from typing "Pushups" or "LeetCode" every time, we should add a Template Dropdown in the Creation Panel.
-   * How it works: When you select a Skill (e.g., Workout), the "Quest Name" input is replaced/supplemented by a Dropdown.
-   * Preset Examples:
-       * Workout: [100 Pushups], [50 Squats], [10KM Run].
-       * Coding: [1 LeetCode Medium], [Review 1 PR], [Read Tech Article].
-       * Mental: [15min Meditation], [Read 20 Pages].
-   * Auto-Fill: Selecting a template automatically sets the Category (Regular), Skill Type, and Target Reps for you. One click
-     = Full Quest created.
-
-  3. Rapid Rep Tracking: Multi-Increment Buttons
-  Currently, you have to click + many times for 100 pushups.
-   * Recommendation: Add +5, +10, and +25 buttons next to the counter in the task item.
-   * Why: Reducing 100 clicks to 4 clicks significantly lowers user friction.
-
-  4. Smart Defaults & Categorization
-   * Recency Logic: The app should remember the last Skill/Category you used and default to it.
-   * Visual Grouping: The HomeScreen should automatically group tasks by Category (Daily Quests at top, Long-Term at bottom) so
-     you don't have to hunt for what's due today.
-
-  ---
-
-  How should we proceed?
-   1. Sidebar Implementation: Should we move the navigation to a custom Side Drawer first?
-   2. Template System: Would you like me to define the list of "Preset Quests" for the dropdown, or do you want to provide your
-      own?
-   3. Counter Upgrade: Should we add the +10/+25 rapid-tracking buttons to the tasks?
-
-  Which of these would you like me to implement first?
-
-    🌟 Recommendations for a 100% User-Friendly System
-
-  To elevate the app from functional to a truly immersive and user-friendly "System," I recommend
-  the following upgrades:
-
-  1. Create a "Memo Pad" (Non-RPG To-Do List)
-   * As you suggested, we can create a separate screen for simple, non-gaming tasks.
-   * My Thematic Spin: Call it the "Memo Pad" or "Personal Log". It would be a clean, simple to-do
-     list for groceries, appointments, etc., that does not grant XP or affect your Player Stats.
-     This keeps the Quest Log pure for "leveling up."
-
-  2. Visual "Hexagon" Stats Chart
-   * In the Status Window, replace the simple list of skills with a hexagonal (six-sided) radar
-     chart.
-   * Each of the 5 main skills (plus your overall Level) would be a point on the chart. As you level
-     up skills, the hexagon would visually expand in that direction. This is a classic RPG/manhwa UI
-     trope that provides an instant visual summary of your character's strengths.
-
-  3. "System" Sound Effects & Animations
-   * Sound: Add subtle, high-tech "blip" or "swoosh" sounds for key actions:
-       * Completing a quest (TaskItem.tsx).
-       * Leveling up (LevelUpModal.tsx).
-       * Receiving a Penalty Quest.
-   * Animation: When a task is completed, make it "glow" and then fade out instead of just being
-     crossed out.
-
-  4. Detailed Quest View
-   * Allow the user to tap on a quest item to open a detailed view showing its creation date, due
-     date, description, and a log of its progress.
-
-  5. Full Push Notification Integration
-   * We've built the settings UI, but the notifications aren't wired up yet. I can now write the
-     code that uses a library like @notifee/react-native to schedule and trigger the "aggressive
-     reminders" you requested.
-
-  How to Proceed?
-
-  Should I begin by implementing the "Memo Pad" to separate your RPG Quests from your real-world
-  tasks? Or would you prefer to see the Hexagon Stats Chart first?
-
-  Here are the specific features I recommend adding:
-    1. The "Inventory" & "Item Drops"
-   * Concept: Rare items drop when you complete difficult quests (e.g., an S-Rank workout).
-   * Items:
-       * Health Potion: Use it to "cancel" a missed daily and prevent a Penalty Quest.
-       * Shadow Crystal: Used to upgrade your Shadow Soldiers (increasing the XP multiplier they give).
-       * Job Change Scroll: Reset your Attribute Points once reached Level 40.
-
-  2. "Gate" Exploration (Dungeons)
-   * Concept: Life categories (Coding, Fitness, etc.) are represented as "Gates" with a boss.
-   * Mechanic: A visual map where you progress through floors. To "Clear" a floor, you must complete a specific number of high-priority quests.
-     Clearing a Gate grants a massive XP bonus and a unique Title.
-
-  3. "The Sovereign's Voice" (Custom SFX & TTS)
-   * Concept: Use Text-to-Speech (TTS) so the system actually speaks to you.
-   * Mechanic: "Player [Name], a quest has arrived." Or "Level Up. Your current status is being recalculated." This would be incredibly immersive
-     for the anime vibe.
-
-  4. Interactive Shadow Soldiers
-   * Concept: Instead of just a badge, your extracted shadows (Igris, Beru, etc.) could be interactive.
-   * Mechanic: You could assign a shadow to a specific Skill Tree. For example, "Beru" could give a +20% XP bonus specifically to the "Mental"
-     tree.
-
-  5. Advanced Stat Visualization
-   * Concept: Now that we removed the unstable SVG charts, we could implement a pure React Native Animated Radar Chart.
-   * Mechanic: A chart that pulses and glows as you allocate your STR/INT points in real-time.
-
-
-  Why Supabase?
-   * Performance: Faster setup without native linking.
-   * Power: SQL allows for advanced analytics (Hunter's Reports) on the server side.
-   * Stability: Keeps your React Native "Stable Bridge Mode" architecture clean.
-
-  Implementation Strategy
-   1. Install Client: npm install @supabase/supabase-js.
-   2. Define Schema: Create a players table with columns for id, name, and a data JSONB column.
-   3. Sync Logic:
-       * Push: In Settings, convert AsyncStorage data to JSON and upsert to Supabase.
-       * Pull: When logging in on a new device, fetch the JSON and overwrite AsyncStorage.
+  ❌ Not Yet Implemented
+   * Detailed Quest View: Currently, tapping a quest toggles completion; a dedicated detail/log view
+     is not yet built.
+   * System Inventory & Item Drops: There is no UI for item drops (Potions, Crystals) or inventory
+     management.
+   * "Gate" Exploration (Dungeons): The visual dungeon map and floor-clearing mechanics are not in
+     the current build.
+   * "The Sovereign's Voice" (TTS): Text-to-speech for system announcements is not yet integrated.
+   * Supabase Cloud Sync: The app currently relies entirely on local AsyncStorage.
 
   npx react-native run-android --mode=release --no-packager

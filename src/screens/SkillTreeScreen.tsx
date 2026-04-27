@@ -93,6 +93,60 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
     refreshStats();
   };
 
+  const handleAssignShadow = async (skill: SkillType, shadowName: string) => {
+    if (!stats) return;
+
+    const currentAssignments = stats.shadowAssignments || {};
+    
+    // If this shadow is already assigned elsewhere, remove it from there
+    const updatedAssignments: Partial<Record<SkillType, string>> = { ...currentAssignments };
+    Object.keys(updatedAssignments).forEach((key) => {
+      if (updatedAssignments[key as SkillType] === shadowName) {
+        delete updatedAssignments[key as SkillType];
+      }
+    });
+
+    // Assign to new skill
+    updatedAssignments[skill] = shadowName;
+
+    const newStats: UserStats = {
+      ...stats,
+      shadowAssignments: updatedAssignments
+    };
+
+    triggerHaptic('notificationSuccess');
+    Alert.alert('SHADOW ASSIGNED', `${shadowName} is now guarding the ${skill} tree (+20% XP)`);
+    await saveStats(newStats);
+    refreshStats();
+  };
+
+  const showShadowPicker = (skill: SkillType) => {
+    if (!stats?.shadowSoldiers || stats.shadowSoldiers.length === 0) {
+      Alert.alert('No Shadows', 'You must extract shadows before you can assign them.');
+      return;
+    }
+
+    const unassignedShadows = stats.shadowSoldiers;
+
+    Alert.alert(
+      'ASSIGN SHADOW',
+      `Choose a shadow soldier to boost ${skill} XP by 20%:`,
+      [
+        ...unassignedShadows.map(name => ({
+          text: name + (stats.shadowAssignments?.[skill] === name ? ' (CURRENT)' : ''),
+          onPress: () => handleAssignShadow(skill, name)
+        })),
+        { text: 'REMOVE SHADOW', onPress: async () => {
+          const updatedAssignments = { ...stats.shadowAssignments };
+          delete updatedAssignments[skill];
+          await saveStats({ ...stats, shadowAssignments: updatedAssignments });
+          refreshStats();
+        }, style: 'destructive' },
+        { text: 'CANCEL', style: 'cancel' }
+      ]
+    );
+  };
+
   if (!stats) return null;
 
   const skillOrder: SkillType[] = ['Coding', 'Workout', 'Cultural', 'Sports', 'Mental'];
@@ -206,12 +260,29 @@ const SkillTreeScreen = ({ onOpenMenu, stats, refreshStats }: SkillTreeScreenPro
           const skill = stats.skills[skillName];
           const progress = (skill.xp / skill.requiredXp) * 100;
           const color = SKILL_COLORS[skillName];
+          const assignedShadow = stats.shadowAssignments?.[skillName];
 
           return (
             <View key={skillName} style={[styles.skillCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.skillHeader}>
-                <Text style={[styles.skillName, { color }]}>{skillName.toUpperCase()}</Text>
+                <View>
+                  <Text style={[styles.skillName, { color }]}>{skillName.toUpperCase()}</Text>
+                  {assignedShadow && (
+                    <View style={styles.assignedShadowRow}>
+                      <Text style={[styles.assignedShadowText, { color: primaryColor }]}>✦ {assignedShadow}</Text>
+                      <Text style={[styles.boostText, { color: colors.success }]}> +20% XP BOOST</Text>
+                    </View>
+                  )}
+                </View>
                 <View style={styles.rankRow}>
+                  <TouchableOpacity 
+                    onPress={() => showShadowPicker(skillName)}
+                    style={[styles.shadowAssignBtn, { borderColor: assignedShadow ? primaryColor : colors.border }]}
+                  >
+                    <Text style={[styles.shadowAssignBtnText, { color: assignedShadow ? primaryColor : colors.textDim }]}>
+                      {assignedShadow ? 'CHANGE SHADOW' : 'ASSIGN SHADOW'}
+                    </Text>
+                  </TouchableOpacity>
                   <View style={[styles.rankBadge, { borderColor: color }]}>
                     <Text style={[styles.rankText, { color }]}>{skill.rank}-RANK</Text>
                   </View>
@@ -286,6 +357,11 @@ const styles = StyleSheet.create({
   achievementsContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 25 },
   achievementBadge: { paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, marginRight: 8, marginBottom: 8 },
   achievementText: { fontSize: 10, fontWeight: 'bold' },
+  shadowAssignBtn: { paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, marginRight: 10, borderRadius: 4 },
+  shadowAssignBtnText: { fontSize: 8, fontWeight: 'bold' },
+  assignedShadowRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  assignedShadowText: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  boostText: { fontSize: 9, fontWeight: 'bold' },
 });
 
 export default SkillTreeScreen;

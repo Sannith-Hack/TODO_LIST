@@ -347,7 +347,12 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           const skill = task.skillType;
           
           // Streak Multiplier: +10% XP per streak day, max 2x (100% bonus)
-          const multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
+          let multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
+          
+          // Shadow Assignment Bonus: +20% XP if a shadow is assigned to this skill
+          if (stats.shadowAssignments?.[skill]) {
+            multiplier += 0.2;
+          }
           const baseXP = task.xpValue || 10;
           const xpGain = Math.floor(baseXP * multiplier);
           
@@ -415,7 +420,12 @@ const HomeScreen = ({ onOpenMenu, stats, refreshStats }: { onOpenMenu: () => voi
           const skill = task.skillType;
           
           // Streak Multiplier: +10% XP per streak day, max 2x (100% bonus)
-          const multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
+          let multiplier = 1 + Math.min(stats.streakCount * 0.1, 1.0);
+          
+          // Shadow Assignment Bonus: +20% XP if a shadow is assigned to this skill
+          if (stats.shadowAssignments?.[skill]) {
+            multiplier += 0.2;
+          }
           const baseXP = task.xpValue || 10;
           const xpGain = Math.floor(baseXP * multiplier);
           
